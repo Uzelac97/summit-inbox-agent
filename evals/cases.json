@@ -1,0 +1,131 @@
+{
+  "description": "Evaluation set for the Summit Roofing inbox agent.",
+  "urgency_rubric": {
+    "high": "Active water ingress, storm damage, exposed structure, or a safety risk.",
+    "medium": "A concrete action is waiting on us and carries a time element: scheduling, an external deadline, or a complaint without active damage.",
+    "low": "Information and budgeting enquiries with no time pressure, and spam.",
+    "caveat": "SYSTEM_INSTRUCTION in src/classifier.py only defines what makes an email high urgency. The medium/low split above is this file's convention, so expect urgency accuracy to trail category accuracy until the prompt states the full rubric."
+  },
+  "cases": [
+    {
+      "id": "quote_plain",
+      "tricky": null,
+      "expected_category": "quote_request",
+      "expected_urgency": "low",
+      "note": "Baseline quote request with no time pressure.",
+      "email": "From: m.delgado44@gmail.com\nSubject: Roof replacement quote\n\nHello,\n\nOur roof is about 22 years old and we are starting to think about replacing\nit. Nothing is wrong with it right now, we just want to budget for it over\nthe next year or two.\n\nCould you send us a quote for a full replacement? The house is a two-storey\ncolonial, roughly 2,200 square feet.\n\nThanks,\nMarco Delgado\n41 Hartley Road\n(614) 555-0144\n"
+    },
+    {
+      "id": "quote_insurance_deadline",
+      "tricky": null,
+      "expected_category": "quote_request",
+      "expected_urgency": "medium",
+      "note": "Quote request with a hard external deadline, which lifts it above a routine quote.",
+      "email": "From: tfoster.claims@gmail.com\nSubject: Need written estimate for insurance by Friday\n\nHi,\n\nMy insurance adjuster came out after the hail in March and approved a\npartial roof replacement. They need a written contractor estimate submitted\nby this Friday or the claim closes and I have to start the process over.\n\nThe roof itself is holding up fine, this is purely a paperwork deadline.\nCan you get me an estimate in writing before then?\n\nTara Foster\n77 Linden Court\n(614) 555-0292\n"
+    },
+    {
+      "id": "appointment_reschedule",
+      "tricky": null,
+      "expected_category": "appointment",
+      "expected_urgency": "medium",
+      "note": "Straightforward scheduling change.",
+      "email": "From: gwen.harper@gmail.com\nSubject: Move my Tuesday inspection?\n\nGood afternoon,\n\nI have a roof inspection booked for next Tuesday at 2pm but I have to be\nout of town that day. Could we move it to the Thursday or Friday instead?\nAfternoons work best for me.\n\nGwen Harper\n213 Melbourne Street\n(614) 555-0311\n"
+    },
+    {
+      "id": "appointment_tomorrow",
+      "tricky": null,
+      "expected_category": "appointment",
+      "expected_urgency": "medium",
+      "note": "Confirmation for a next-day visit: time-sensitive, but nothing is damaged.",
+      "email": "From: oscar.benitez@gmail.com\nSubject: are you still coming tomorrow\n\nHi, just checking that your crew is still coming tomorrow morning for the\ngutter work. Nobody confirmed and I took the day off work for it. What time\nshould I expect you?\n\nOscar Benitez\n(614) 555-0407\n"
+    },
+    {
+      "id": "leak_no_prior_work",
+      "tricky": "taxonomy gap",
+      "expected_category": "general",
+      "expected_urgency": "high",
+      "note": "Active leak from a NEW customer. None of the five categories fits a first-time emergency repair request: it is not a complaint about our work, and the sender wants help rather than a quote. Expecting 'general' documents the gap. If the model answers quote_request that is also defensible, and the taxonomy is what needs fixing, not the model.",
+      "email": "From: priya.nair.home@gmail.com\nSubject: Roof leaking into bedroom, can anyone come out\n\nHello,\n\nI have never used your company before but you came up first for emergency\nroof repair. Water started coming through our bedroom ceiling about an hour\nago and it is getting worse. There is a wet patch maybe two feet across and\nit is dripping onto the bed.\n\nI have no idea what caused it, the weather has been fine. Is there any\nchance someone can come out today? I will pay whatever the emergency rate\nis.\n\nPriya Nair\n19 Collingwood Avenue\n(614) 555-0588\n"
+    },
+    {
+      "id": "angry_nails",
+      "tricky": "angry customer",
+      "expected_category": "complaint",
+      "expected_urgency": "medium",
+      "note": "Furious tone, but the underlying problem is cleanup with no active damage. Tests that anger alone does not push urgency to high.",
+      "email": "From: dwilkins1962@outlook.com\nSubject: ABSOLUTELY UNACCEPTABLE\n\nI do not know who trained your crew but this is the sloppiest job I have\never seen. They finished the roof on Monday and left roofing nails ALL OVER\nmy driveway and front lawn. My wife picked one up in her car tyre yesterday\nand that is a 180 dollar repair I did not ask for.\n\nNobody swept up. Nobody even said goodbye. For 14,000 dollars I expected\nbetter than this and frankly I am embarrassed I recommended you to my\nneighbour.\n\nI want someone out here with a magnet sweeper and I want the tyre paid for.\nDo not send me a survey asking how we did.\n\nDoug Wilkins\n6 Pinehurst Drive\n"
+    },
+    {
+      "id": "polite_urgent_nursery",
+      "tricky": "polite complaint that is actually urgent",
+      "expected_category": "complaint",
+      "expected_urgency": "high",
+      "note": "Apologetic, understated tone describing active water ingress above an infant's room, with more rain forecast. Tests that politeness does not mask urgency.",
+      "email": "From: h.okonkwo@gmail.com\nSubject: sorry to bother you about a small issue\n\nHi there,\n\nI hope this is not a nuisance, and I am sure it is nothing major. Your team\ndid our roof back in September and we have been really happy with it.\n\nI just wanted to mention, when it rained last night we noticed a little\nwater coming down the wall in our daughter's nursery, near where the new\nflashing meets the chimney. It is only a small amount. I have put a towel\ndown and moved her cot to the other side of the room for now.\n\nNo rush at all, but would someone be able to take a look at some point?\nThere is more rain forecast for the weekend.\n\nThanks so much for everything,\nHelen Okonkwo\n"
+    },
+    {
+      "id": "quote_no_contact",
+      "tricky": "no contact info",
+      "expected_category": "quote_request",
+      "expected_urgency": "low",
+      "note": "No name, phone, address, or signature. The From address is the only contact detail available; every other customer field must come back empty rather than invented.",
+      "email": "Subject: price?\n\nhow much for a new roof on a small bungalow\n"
+    },
+    {
+      "id": "reschedule_plus_quote",
+      "tricky": "two requests in one email",
+      "expected_category": "appointment",
+      "expected_urgency": "medium",
+      "note": "Two distinct asks. Rescheduling is the primary request and the one with a deadline; the garage quote is secondary. quote_request is a defensible answer. What matters most is that missing_info and the draft reply address both asks rather than silently dropping one.",
+      "email": "From: n.achterberg@gmail.com\nSubject: Thursday + one more thing\n\nHi,\n\nTwo things. First, we cannot make the appointment on Thursday afternoon\nafter all, my husband's surgery got moved to that morning. Could we do the\nfollowing Monday or Tuesday instead?\n\nSecond, while your man is here, could he also price up re-roofing the\ndetached garage? It is about 20 by 24 feet, currently corrugated metal, and\nit leaks in two corners. We would want that as a separate quote so we can\ndecide on it on its own.\n\nNina Achterberg\n88 Rosslyn Way\n(614) 555-0761\n"
+    },
+    {
+      "id": "vague",
+      "tricky": "vague message",
+      "expected_category": "general",
+      "expected_urgency": "low",
+      "note": "Almost no information. Tests conservative classification and a substantial missing_info list instead of a guessed intent.",
+      "email": "From: bigdave_1977@yahoo.com\nSubject: roof\n\nhi is this the roofing company. i need some help with my roof. let me know\nthanks\n"
+    },
+    {
+      "id": "german_quote",
+      "tricky": "German-language email",
+      "expected_category": "quote_request",
+      "expected_urgency": "medium",
+      "note": "German email reporting damp ceiling patches but no active dripping, plus a two-week scheduling wish. Tests extraction from a non-English email. The prompt currently requires the draft reply in English regardless of the customer's language, which is worth a deliberate decision.",
+      "email": "From: s.brandt@webmail.de\nSubject: Angebot fuer neues Dach\n\nGuten Tag,\n\nwir haben ein Reihenhaus in Grandview Heights, das Dach ist etwa 30 Jahre\nalt. Bei starkem Regen sehen wir inzwischen feuchte Stellen an der Decke im\nObergeschoss, es tropft aber noch nicht.\n\nKoennten Sie uns ein Angebot fuer eine komplette Neueindeckung machen? Ein\nTermin in den naechsten zwei Wochen waere uns sehr willkommen.\n\nMit freundlichen Gruessen\nStefan Brandt\nAhornweg 14\nTelefon: 0170 5551234\n"
+    },
+    {
+      "id": "spam_as_quote",
+      "tricky": "spam disguised as a quote request",
+      "expected_category": "spam",
+      "expected_urgency": "low",
+      "note": "Opens exactly like a genuine quote request before pivoting into a supplier sales pitch. Tests that the whole email is read before classifying.",
+      "email": "From: outreach@roofpro-materials.co\nSubject: Quote request - 14 properties\n\nHi Summit Roofing,\n\nI would like to get a quote for roofing work across a portfolio of 14\nresidential properties.\n\nActually, before that, I should introduce myself properly. I am with\nRoofPro Materials and we supply discounted shingles direct from the\nmanufacturer, cutting out the distributor margin entirely. Contractors your\nsize typically save 22 to 31 percent on materials.\n\nI would love to set up 15 minutes to walk you through our catalogue and\ncurrent pricing. Are you free Thursday or Friday this week? Happy to work\naround your schedule.\n\nLooking forward to it,\nBrandon Teague\nRoofPro Materials | Direct: (800) 555-0199\n"
+    },
+    {
+      "id": "spam_blast",
+      "tricky": null,
+      "expected_category": "spam",
+      "expected_urgency": "low",
+      "note": "Unambiguous marketing blast.",
+      "email": "From: no-reply@summitgrowthpartners.info\nSubject: 2 spots left for roofers in your county\n\nATTENTION ROOFING BUSINESS OWNER\n\nWe are opening 2 final spots in Franklin County for our Roofer Domination\nProgram. Our clients average 38 new installs per month within 60 days.\n\n- Done-for-you Google Ads\n- AI appointment setter\n- Proprietary lead scoring\n\nClick through to claim your spot before your competitor does.\n\nTo stop receiving these messages reply STOP.\n"
+    },
+    {
+      "id": "warranty_question",
+      "tricky": null,
+      "expected_category": "general",
+      "expected_urgency": "low",
+      "note": "Information request with no work attached and an explicit lack of urgency.",
+      "email": "From: lucy.framingham@gmail.com\nSubject: warranty paperwork question\n\nHi,\n\nYou replaced our roof in 2023 and we are refinancing. The lender is asking\nfor documentation of the workmanship warranty. Could you send a copy of\nwhatever you have on file for us?\n\nNo urgency, the lender gave us three weeks.\n\nLucy Framingham\n14 Westgate Close\n(614) 555-0822\n"
+    },
+    {
+      "id": "storm_existing_customer",
+      "tricky": null,
+      "expected_category": "complaint",
+      "expected_urgency": "high",
+      "note": "Storm damage to a roof we installed, with exposed decking and heavy rain forecast. Structural exposure makes this high even with no water inside yet.",
+      "email": "From: rcastellano.oh@gmail.com\nSubject: shingles came off in last night's wind - you did this roof in May\n\nMorning,\n\nThe wind last night took a strip of shingles off the back slope of our\nroof, the one your team installed in May. I can see the bare wood\nunderneath from the garden, it is maybe a metre and a half across.\n\nNothing is coming inside yet but there is heavy rain forecast for tonight\nand I am worried about what happens if that goes on uncovered. The roof is\nfive months old so I assume this is covered.\n\nCan someone get a tarp over it today at least?\n\nRafael Castellano\n52 Ashbourne Lane\n(614) 555-0935\n"
+    }
+  ]
+}
