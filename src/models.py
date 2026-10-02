@@ -7,7 +7,11 @@ want out of an email, not *who* produces it.
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+# Bullet characters a model may prefix list entries with despite being asked
+# for plain phrases.
+_BULLETS = "-*•· \t"
 
 
 class Category(str, Enum):
@@ -54,3 +58,14 @@ class EmailAnalysis(BaseModel):
         description="Details we still need from the customer before we can act."
     )
     draft_reply: str = Field(description="Ready-to-send reply, signed as Summit Roofing.")
+
+    @field_validator("missing_info")
+    @classmethod
+    def _strip_bullets(cls, items: List[str]) -> List[str]:
+        """Drop bullet prefixes so the UI can render these as its own list.
+
+        Runs on cached results too, which keeps entries written before the
+        prompt forbade bullets from displaying as "- - thing".
+        """
+        cleaned = (item.strip().lstrip(_BULLETS).strip() for item in items)
+        return [item for item in cleaned if item]

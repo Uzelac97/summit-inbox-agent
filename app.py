@@ -17,7 +17,7 @@ from pathlib import Path
 import streamlit as st
 
 from src.classifier import active_model, analyze_email, is_cached
-from src.models import EmailAnalysis, Urgency
+from src.models import Category, EmailAnalysis, Urgency
 
 ROOT = Path(__file__).resolve().parent
 SAMPLES_DIR = ROOT / "samples"
@@ -31,10 +31,15 @@ REJECTED = "rejected"
 
 URGENCY_RANK = {Urgency.HIGH: 0, Urgency.MEDIUM: 1, Urgency.LOW: 2}
 URGENCY_COLOR = {Urgency.HIGH: "#dc2626", Urgency.MEDIUM: "#d97706", Urgency.LOW: "#64748b"}
-URGENCY_DOT = {Urgency.HIGH: "🔴", Urgency.MEDIUM: "🟠", Urgency.LOW: "⚪"}
+URGENCY_DOT = {
+    Urgency.HIGH: ":red[●]",
+    Urgency.MEDIUM: ":orange[●]",
+    Urgency.LOW: ":grey[●]",
+}
 
 STATUS_LABEL = {APPROVED: "Sent", REJECTED: "Rejected", PENDING: "Needs review"}
 STATUS_COLOR = {APPROVED: "#059669", REJECTED: "#64748b", PENDING: "#2563eb"}
+ARCHIVED_COLOR = "#94a3b8"
 
 CSS = """
 <style>
@@ -201,6 +206,12 @@ def category_label(analysis: EmailAnalysis) -> str:
     return analysis.category.value.replace("_", " ").title()
 
 
+def is_spam(item: dict) -> bool:
+    """Spam is archived on arrival and never counts as work to review."""
+    analysis = item["analysis"]
+    return analysis is not None and analysis.category is Category.SPAM
+
+
 def item_badges(item: dict) -> str:
     analysis = item["analysis"]
     if analysis is None:
@@ -209,7 +220,9 @@ def item_badges(item: dict) -> str:
         badge(category_label(analysis)),
         badge(analysis.urgency.value.upper(), URGENCY_COLOR[analysis.urgency]),
     ]
-    if item["status"] != PENDING:
+    if is_spam(item):
+        parts.append(badge("Archived", ARCHIVED_COLOR))
+    elif item["status"] != PENDING:
         parts.append(badge(STATUS_LABEL[item["status"]], STATUS_COLOR[item["status"]]))
     return "".join(parts)
 
@@ -251,7 +264,11 @@ def render_sidebar(inbox: list[dict]) -> tuple[list[str], list[str]]:
 
         analyzed = [i for i in inbox if i["analysis"]]
         urgent = sum(1 for i in analyzed if i["analysis"].urgency is Urgency.HIGH)
-        waiting = sum(1 for i in analyzed if i["status"] == PENDING)
+        waiting = sum(
+            1
+            for i in analyzed
+            if i["status"] == PENDING and not is_spam(i)
+        )
 
         left, right = st.columns(2)
         left.metric("Needs review", waiting)
@@ -292,36 +309,57 @@ def render_compose() -> None:
                 st.rerun()
 
 
+def render_row(item: dict) -> None:
+    """One clickable inbox row."""
+    with st.container(border=True):
+        is_open = item["id"] == st.session_state.get("selected")
+        label = (
+            f"{URGENCY_DOT[item['analysis'].urgency]} "
+            if item["analysis"]
+            else ":grey[○] "
+        )
+        if st.button(
+            f"{label}{item['subject']}",
+            key=f"open_{item['id']}",
+            width="stretch",
+            type="primary" if is_open else "secondary",
+        ):
+            st.session_state.selected = item["id"]
+            st.rerun()
+
+        st.markdown(item_badges(item), unsafe_allow_html=True)
+        analysis = item["analysis"]
+        if analysis:
+            who = analysis.customer.name or item["sender"] or "Unknown sender"
+            st.caption(f"**{who}** — {analysis.summary}")
+        else:
+            st.caption(item["sender"] or item["origin"])
+            if st.button("Analyze", key=f"run_{item['id']}"):
+                if run_analysis(item["text"]):
+                    st.rerun()
+
+
 def render_list(items: list[dict]) -> None:
     st.markdown("##### Inbox")
     if not items:
         st.info("No emails match the current filters.")
         return
 
-    selected = st.session_state.get("selected")
-    for item in items:
-        with st.container(border=True):
-            is_open = item["id"] == selected
-            label = f"{URGENCY_DOT[item['analysis'].urgency]}  " if item["analysis"] else "➖  "
-            if st.button(
-                f"{label}{item['subject']}",
-                key=f"open_{item['id']}",
-                width="stretch",
-                type="primary" if is_open else "secondary",
-            ):
-                st.session_state.selected = item["id"]
-                st.rerun()
+    # Spam is archived on arrival: out of the main flow, but still reachable.
+    active = [i for i in items if not is_spam(i)]
+    spam = [i for i in items if is_spam(i)]
 
-            st.markdown(item_badges(item), unsafe_allow_html=True)
-            analysis = item["analysis"]
-            if analysis:
-                who = analysis.customer.name or item["sender"] or "Unknown sender"
-                st.caption(f"**{who}** — {analysis.summary}")
-            else:
-                st.caption(item["sender"] or item["origin"])
-                if st.button("Analyze", key=f"run_{item['id']}"):
-                    if run_analysis(item["text"]):
-                        st.rerun()
+    if active:
+        for item in active:
+            render_row(item)
+    else:
+        st.info("Nothing to review.")
+
+    if spam:
+        with st.expander(f"Spam ({len(spam)})", expanded=False):
+            st.caption("Archived automatically. No reply drafted.")
+            for item in spam:
+                render_row(item)
 
 
 def render_detail(item: dict | None) -> None:
@@ -432,7 +470,8 @@ def main() -> None:
     items = sorted([i for i in inbox if visible(i)], key=sort_key)
 
     if st.session_state.get("selected") not in {i["id"] for i in items}:
-        st.session_state.selected = items[0]["id"] if items else None
+        openable = [i for i in items if not is_spam(i)] or items
+        st.session_state.selected = openable[0]["id"] if openable else None
     current = next((i for i in items if i["id"] == st.session_state.selected), None)
 
     list_col, detail_col = st.columns([1, 1.45], gap="large")

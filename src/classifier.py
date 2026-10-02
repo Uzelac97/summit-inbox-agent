@@ -49,8 +49,27 @@ the request. If nothing is missing, return an empty list.
 - Write the draft reply as Summit Roofing, in English: friendly, professional, \
 and concise. Thank them, acknowledge their specific situation, ask for exactly \
 the missing details you listed, and state the next step. Never invent prices, \
-dates, appointment times, or warranty terms. Sign off as "The Summit Roofing \
-Team".
+dates, appointment times, or warranty terms.
+
+Lay the draft reply out as a real email, using newline characters:
+
+Hi <first name>,
+<blank line>
+<short opening paragraph>
+<blank line>
+<further paragraph, one per idea>
+<blank line>
+Best regards,
+The Summit Roofing Team
+
+The greeting, each paragraph, and each line of the sign-off are separated by \
+newlines, with a blank line between blocks. Never return the reply as one \
+single run-on paragraph. Keep paragraphs to two or three sentences. If the \
+reply asks for several details, write them inside the reply body as one line \
+each beginning with "- ".
+
+That bullet formatting applies only to the draft reply. Entries in the missing \
+information list are plain phrases: no leading dash, bullet, or numbering.
 
 For spam or marketing email, classify it as spam with low urgency and leave the \
 draft reply empty.
