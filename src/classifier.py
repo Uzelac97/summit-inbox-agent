@@ -75,6 +75,11 @@ For spam or marketing email, classify it as spam with low urgency and leave the 
 draft reply empty.
 """
 
+# Editing the prompt changes what the model returns, so cached results from an
+# older prompt are stale. Fingerprinting the prompt into the cache key retires
+# those entries automatically instead of leaving them to be cleared by hand.
+PROMPT_FINGERPRINT = hashlib.sha256(SYSTEM_INSTRUCTION.encode("utf-8")).hexdigest()[:8]
+
 _client = None
 
 
@@ -97,13 +102,17 @@ def active_model() -> str:
 
 
 def _cache_file(text: str, model: str) -> Path:
-    """Where the result for this email and model is stored.
+    """Where the result for this email, model, and prompt is stored.
 
-    The model is part of the key: the same email analyzed by a different model
-    is a different result, and must not be served from another model's entry.
+    All three are part of the key: the same email analyzed by a different model
+    or under a different prompt is a different result, and must not be served
+    from another one's entry. The fingerprint also prefixes the filename, so
+    entries from a retired prompt are easy to spot and delete.
     """
-    key = hashlib.sha256(f"{model}\n{text}".encode("utf-8")).hexdigest()
-    return CACHE_DIR / f"{key}.json"
+    key = hashlib.sha256(
+        f"{PROMPT_FINGERPRINT}\n{model}\n{text}".encode("utf-8")
+    ).hexdigest()
+    return CACHE_DIR / f"{PROMPT_FINGERPRINT}-{key}.json"
 
 
 def is_cached(text: str) -> bool:
