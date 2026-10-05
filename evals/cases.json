@@ -1,10 +1,11 @@
 {
   "description": "Evaluation set for the Summit Roofing inbox agent. Six categories: emergency, quote_request, appointment, complaint, general, spam.",
   "urgency_rubric": {
-    "high": "Water entering the building, exposed structure, a safety risk, or damage that worsens materially within a day. Every emergency is high.",
-    "medium": "A concrete action is waiting on us and carries a time element: scheduling, an external deadline, or a complaint with nothing currently leaking or unsafe.",
+    "high": "Water entering the building in any amount, including damp patches and stains that are not dripping; exposed or damaged structure; or a safety hazard. Every emergency is high.",
+    "medium": "A concrete action is waiting on us and carries a time element - scheduling, a named deadline, or a complaint about our work - with no water ingress, exposure, or hazard.",
     "low": "Information and budgeting enquiries with no time pressure, and spam.",
-    "note": "This rubric is now stated in full in SYSTEM_INSTRUCTION in src/classifier.py, so these expectations and the prompt agree."
+    "negative_rule": "Time pressure alone is never high. Deadlines, insurance cut-offs, next-day visits, and an anxious or angry tone are medium at most unless the email also reports physical damage or risk.",
+    "note": "This rubric is stated in full in SYSTEM_INSTRUCTION in src/classifier.py, so these expectations and the prompt agree."
   },
   "cases": [
     {
@@ -91,8 +92,8 @@
       "id": "german_quote",
       "tricky": "German-language email",
       "expected_category": "quote_request",
-      "expected_urgency": "medium",
-      "note": "German email reporting damp ceiling patches but no active dripping, plus a two-week scheduling wish. Tests extraction from a non-English email. The prompt currently requires the draft reply in English regardless of the customer's language, which is worth a deliberate decision.",
+      "expected_urgency": "high",
+      "note": "German email reporting damp ceiling patches but no active dripping, plus a two-week scheduling wish. Any water ingress counts as high, because a missed leak costs far more than one unnecessary fast response. The category stays quote_request: slow damage is classified by what the sender is asking for, and only actively running water is the emergency category. Also tests extraction from, and a reply in, a non-English email.",
       "email": "From: s.brandt@webmail.de\nSubject: Angebot fuer neues Dach\n\nGuten Tag,\n\nwir haben ein Reihenhaus in Grandview Heights, das Dach ist etwa 30 Jahre\nalt. Bei starkem Regen sehen wir inzwischen feuchte Stellen an der Decke im\nObergeschoss, es tropft aber noch nicht.\n\nKoennten Sie uns ein Angebot fuer eine komplette Neueindeckung machen? Ein\nTermin in den naechsten zwei Wochen waere uns sehr willkommen.\n\nMit freundlichen Gruessen\nStefan Brandt\nAhornweg 14\nTelefon: 0170 5551234\n"
     },
     {
@@ -150,6 +151,14 @@
       "expected_urgency": "low",
       "note": "Third-party enquiry asking us to confirm completed work for a property sale. No pricing, no visit to book, and the sender gives a generous deadline, so it is general at low urgency.",
       "email": "From: j.pemberton@halloway-residential.com\nSubject: Confirmation of roof works - 22 Alderney Drive\n\nGood morning,\n\nI am handling the sale of 22 Alderney Drive on behalf of the vendor, and\nthe buyer's solicitor has asked for confirmation of the roof works your\ncompany carried out there.\n\nWould you be able to confirm in writing what was done, the date it was\ncompleted, and whether any guarantee remains in force? The vendor has\ngiven permission for you to share this with us.\n\nThere is no great rush - exchange is not expected for another month.\n\nKind regards,\nJames Pemberton\nHalloway Residential\n(614) 555-0255\n"
+    },
+    {
+      "id": "spam_fake_invoice",
+      "tricky": "spam dressed as an account notice",
+      "expected_category": "spam",
+      "expected_urgency": "low",
+      "note": "Bulk mail imitating a billing notice from a trade directory, complete with a fabricated account number and a payment deadline. Tests that an invented deadline in spam does not lift urgency, and that an official tone does not make it general.",
+      "email": "From: accounts@trade-listings-national.net\nSubject: ACTION REQUIRED: Summit Roofing listing renewal 2026 (Ref TLN-884213)\n\nDear Business Owner,\n\nOur records indicate that your business listing for SUMMIT ROOFING is due\nfor renewal. Account reference: TLN-884213.\n\nRenewal amount: 487.00 USD\nPayment due: within 14 days of this notice\n\nFailure to remit payment may result in removal of your listing from the\nNational Trade Listings directory and associated partner networks, which\nmay affect your online visibility.\n\nTo renew, reply to this email with your preferred payment method and a\nmember of our accounts team will be in touch.\n\nThis is not a bill. This is a solicitation for the order of services and\nyou are under no obligation to pay unless you accept this offer.\n\nAccounts Department\nNational Trade Listings\n"
     }
   ]
 }
