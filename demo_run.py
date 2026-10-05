@@ -9,6 +9,7 @@ import textwrap
 from pathlib import Path
 
 from src.classifier import active_model, analyze_email, is_cached
+from src.email_source import SampleSource
 from src.models import EmailAnalysis
 
 SAMPLES_DIR = Path(__file__).parent / "samples"
@@ -84,7 +85,7 @@ def main() -> int:
     args = parser.parse_args()
     use_cache = not args.no_cache
 
-    samples = sorted(SAMPLES_DIR.glob("*.txt"))
+    samples = SampleSource(SAMPLES_DIR).fetch()
     if not samples:
         print(f"No samples found in {SAMPLES_DIR}")
         return 1
@@ -94,12 +95,12 @@ def main() -> int:
     failures = 0
     hits = 0
     called = 0
-    for index, path in enumerate(samples, start=1):
-        text = path.read_text(encoding="utf-8")
+    for index, email in enumerate(samples, start=1):
+        text = email.prompt_text
         cached = use_cache and is_cached(text)
 
         print("=" * WIDTH)
-        print(f"[{index}/{len(samples)}] {path.name}{'  (cached)' if cached else ''}")
+        print(f"[{index}/{len(samples)}] {email.origin}{'  (cached)' if cached else ''}")
         print("=" * WIDTH)
 
         if not cached:

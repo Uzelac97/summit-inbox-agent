@@ -1,7 +1,8 @@
 """Provider-agnostic data models for the inbox agent.
 
-Nothing in this module may import an AI SDK: these models describe *what* we
-want out of an email, not *who* produces it.
+Nothing in this module may import an AI SDK or a mail provider SDK: these
+models describe *what* an email is and *what* we want out of it, not *who*
+delivered it or *who* analyzed it.
 """
 
 from enum import Enum
@@ -12,6 +13,72 @@ from pydantic import BaseModel, Field, field_validator
 # Bullet characters a model may prefix list entries with despite being asked
 # for plain phrases.
 _BULLETS = "-*•· \t"
+
+
+class AttachmentInfo(BaseModel):
+    """What we tell the model about an attachment: its name and type only.
+
+    The file itself is never read or uploaded. A name and a MIME type are
+    enough for the model to say "you mentioned photos but attached a
+    spreadsheet", and keep us clear of opening customer files.
+    """
+
+    filename: str = Field(description="Attachment filename as the sender set it.")
+    mime_type: str = Field(description='MIME type, e.g. "application/pdf".')
+
+    def describe(self) -> str:
+        return f"{self.filename} ({self.mime_type})"
+
+
+class InboundEmail(BaseModel):
+    """One email awaiting triage, independent of where it came from.
+
+    The first three fields are what a provider needs in order to act on the
+    message later - label it, or reply in its thread - and are empty for
+    emails that did not come from a real mailbox. Everything after them is
+    what the model reads.
+    """
+
+    source_id: str = Field(
+        default="", description="Provider's own message id, for labelling."
+    )
+    thread_id: str = Field(
+        default="", description="Provider's thread id, so a reply stays in thread."
+    )
+    rfc822_message_id: str = Field(
+        default="",
+        description="The Message-ID header, which In-Reply-To must quote.",
+    )
+    origin: str = Field(
+        default="", description="Where this came from, for display: a filename or a mailbox."
+    )
+    sender: str = Field(default="", description="From header, as written.")
+    subject: str = Field(default="", description="Subject header, as written.")
+    body: str = Field(default="", description="Plain-text body, HTML already stripped.")
+    attachments: List[AttachmentInfo] = Field(default_factory=list)
+
+    @property
+    def prompt_text(self) -> str:
+        """The canonical text handed to ``analyze_email``.
+
+        Every source renders down to this one shape, so a Gmail message and a
+        sample file are indistinguishable by the time the model sees them. It
+        is also what the analysis cache keys on, so changing this layout
+        retires cached results - deliberately, since it changes the input.
+        """
+        header = []
+        if self.sender:
+            header.append(f"From: {self.sender}")
+        if self.subject:
+            header.append(f"Subject: {self.subject}")
+        if self.attachments:
+            listed = ", ".join(a.describe() for a in self.attachments)
+            header.append(f"Attachments: {listed}")
+
+        body = self.body.strip()
+        if not header:
+            return f"{body}\n"
+        return "\n".join(header) + f"\n\n{body}\n"
 
 
 class Category(str, Enum):

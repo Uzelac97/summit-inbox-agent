@@ -18,6 +18,7 @@ from pathlib import Path
 import streamlit as st
 
 from src.classifier import active_model, analyze_email, is_cached
+from src.email_source import SampleSource
 from src.models import Category, EmailAnalysis, Urgency
 
 ROOT = Path(__file__).resolve().parent
@@ -166,7 +167,10 @@ def load_inbox() -> list[dict]:
     Analysis is read from the disk cache only: an email with no cached result
     is listed as un-analyzed rather than silently costing a request.
     """
-    sources = [(path.name, path.read_text(encoding="utf-8")) for path in sorted(SAMPLES_DIR.glob("*.txt"))]
+    sources = [
+        (email.origin, email.prompt_text)
+        for email in SampleSource(SAMPLES_DIR).fetch()
+    ]
     sources += [("pasted", text) for text in load_pasted()]
 
     status_store = load_status()
