@@ -1,12 +1,11 @@
 """Run every email in samples/ through the classifier and print the results.
 
-Usage: python test_run.py [--no-cache]
+Usage: python demo_run.py [--no-cache]
 """
 
 import argparse
 import sys
 import textwrap
-import time
 from pathlib import Path
 
 from src.classifier import active_model, analyze_email, is_cached
@@ -14,8 +13,6 @@ from src.models import EmailAnalysis
 
 SAMPLES_DIR = Path(__file__).parent / "samples"
 WIDTH = 78
-
-PAUSE_SECONDS = 2
 
 URGENCY_MARK = {"low": "[ low ]", "medium": "[ MED ]", "high": "[ HIGH ]"}
 
@@ -100,10 +97,6 @@ def main() -> int:
     for index, path in enumerate(samples, start=1):
         text = path.read_text(encoding="utf-8")
         cached = use_cache and is_cached(text)
-
-        # Only pause before a real API call; cache hits cost us no quota.
-        if called > 0 and not cached:
-            time.sleep(PAUSE_SECONDS)  # stay under the free tier's rate limit
 
         print("=" * WIDTH)
         print(f"[{index}/{len(samples)}] {path.name}{'  (cached)' if cached else ''}")

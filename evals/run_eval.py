@@ -5,8 +5,8 @@ Usage:
     python evals/run_eval.py --all         # also list the cases that passed
     python evals/run_eval.py --cached-only # score only cached cases, no API calls
 
-The first full run costs one API request per uncached case. Later runs are free,
-because results are cached by prompt, model, and email text.
+The first full run costs one API request per uncached case. Later runs cost
+nothing, because results are cached by prompt, model, and email text.
 
 Exit code is 1 if any case could not be analyzed at all, 0 otherwise. A low
 score is a finding, not a crash.
@@ -18,7 +18,6 @@ import argparse
 import json
 import sys
 import textwrap
-import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -28,7 +27,6 @@ sys.path.insert(0, str(ROOT))  # so `src` imports work when run as a script
 from src.classifier import active_model, analyze_email, is_cached  # noqa: E402
 
 CASES_FILE = Path(__file__).resolve().parent / "cases.json"
-PAUSE_SECONDS = 2
 WIDTH = 86
 
 
@@ -161,8 +159,6 @@ def main() -> int:
             continue
 
         if not cached:
-            if called:
-                time.sleep(PAUSE_SECONDS)  # stay under the free tier's rate limit
             called += 1
 
         try:

@@ -1,4 +1,4 @@
-google-genai
-python-dotenv
-pydantic
-streamlit
+anthropic==1.11.0
+pydantic==2.13.5
+python-dotenv==1.2.4
+streamlit==1.64.0

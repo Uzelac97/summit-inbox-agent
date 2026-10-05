@@ -1,10 +1,10 @@
 {
-  "description": "Evaluation set for the Summit Roofing inbox agent.",
+  "description": "Evaluation set for the Summit Roofing inbox agent. Six categories: emergency, quote_request, appointment, complaint, general, spam.",
   "urgency_rubric": {
-    "high": "Active water ingress, storm damage, exposed structure, or a safety risk.",
-    "medium": "A concrete action is waiting on us and carries a time element: scheduling, an external deadline, or a complaint without active damage.",
+    "high": "Water entering the building, exposed structure, a safety risk, or damage that worsens materially within a day. Every emergency is high.",
+    "medium": "A concrete action is waiting on us and carries a time element: scheduling, an external deadline, or a complaint with nothing currently leaking or unsafe.",
     "low": "Information and budgeting enquiries with no time pressure, and spam.",
-    "caveat": "SYSTEM_INSTRUCTION in src/classifier.py only defines what makes an email high urgency. The medium/low split above is this file's convention, so expect urgency accuracy to trail category accuracy until the prompt states the full rubric."
+    "note": "This rubric is now stated in full in SYSTEM_INSTRUCTION in src/classifier.py, so these expectations and the prompt agree."
   },
   "cases": [
     {
@@ -41,10 +41,10 @@
     },
     {
       "id": "leak_no_prior_work",
-      "tricky": "taxonomy gap",
-      "expected_category": "general",
+      "tricky": "emergency from a new sender",
+      "expected_category": "emergency",
       "expected_urgency": "high",
-      "note": "Active leak from a NEW customer. None of the five categories fits a first-time emergency repair request: it is not a complaint about our work, and the sender wants help rather than a quote. Expecting 'general' documents the gap. If the model answers quote_request that is also defensible, and the taxonomy is what needs fixing, not the model.",
+      "note": "Active leak from a first-time sender. The emergency category exists precisely for this: it applies regardless of whether the sender has ever been a customer. This case previously documented a taxonomy gap, which the emergency category closes.",
       "email": "From: priya.nair.home@gmail.com\nSubject: Roof leaking into bedroom, can anyone come out\n\nHello,\n\nI have never used your company before but you came up first for emergency\nroof repair. Water started coming through our bedroom ceiling about an hour\nago and it is getting worse. There is a wet patch maybe two feet across and\nit is dripping onto the bed.\n\nI have no idea what caused it, the weather has been fine. Is there any\nchance someone can come out today? I will pay whatever the emergency rate\nis.\n\nPriya Nair\n19 Collingwood Avenue\n(614) 555-0588\n"
     },
     {
@@ -57,10 +57,10 @@
     },
     {
       "id": "polite_urgent_nursery",
-      "tricky": "polite complaint that is actually urgent",
-      "expected_category": "complaint",
+      "tricky": "emergency behind a polite, understated tone",
+      "expected_category": "emergency",
       "expected_urgency": "high",
-      "note": "Apologetic, understated tone describing active water ingress above an infant's room, with more rain forecast. Tests that politeness does not mask urgency.",
+      "note": "Active water ingress above an infant's room with more rain forecast. Emergency outranks complaint even though the sender is complaining about our own recent work, and the apologetic tone must not mask it.",
       "email": "From: h.okonkwo@gmail.com\nSubject: sorry to bother you about a small issue\n\nHi there,\n\nI hope this is not a nuisance, and I am sure it is nothing major. Your team\ndid our roof back in September and we have been really happy with it.\n\nI just wanted to mention, when it rained last night we noticed a little\nwater coming down the wall in our daughter's nursery, near where the new\nflashing meets the chimney. It is only a small amount. I have put a towel\ndown and moved her cot to the other side of the room for now.\n\nNo rush at all, but would someone be able to take a look at some point?\nThere is more rain forecast for the weekend.\n\nThanks so much for everything,\nHelen Okonkwo\n"
     },
     {
@@ -121,10 +121,10 @@
     },
     {
       "id": "storm_existing_customer",
-      "tricky": null,
-      "expected_category": "complaint",
+      "tricky": "emergency framed as a warranty complaint",
+      "expected_category": "emergency",
       "expected_urgency": "high",
-      "note": "Storm damage to a roof we installed, with exposed decking and heavy rain forecast. Structural exposure makes this high even with no water inside yet.",
+      "note": "Storm damage with exposed decking and heavy rain forecast. Nothing is inside yet, but the structure is open, so this is an emergency rather than the complaint it reads as on the surface.",
       "email": "From: rcastellano.oh@gmail.com\nSubject: shingles came off in last night's wind - you did this roof in May\n\nMorning,\n\nThe wind last night took a strip of shingles off the back slope of our\nroof, the one your team installed in May. I can see the bare wood\nunderneath from the garden, it is maybe a metre and a half across.\n\nNothing is coming inside yet but there is heavy rain forecast for tonight\nand I am worried about what happens if that goes on uncovered. The roof is\nfive months old so I assume this is covered.\n\nCan someone get a tarp over it today at least?\n\nRafael Castellano\n52 Ashbourne Lane\n(614) 555-0935\n"
     }
   ]

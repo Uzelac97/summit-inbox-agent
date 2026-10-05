@@ -4,12 +4,13 @@ Run with:  streamlit run app.py
 
 Opening the dashboard never calls the API. Sample emails are read from the
 on-disk cache in ``.cache/``; analysis only happens when you explicitly paste
-an email or press Analyze, which keeps the free-tier daily quota intact.
+an email or press Analyze, so reopening the dashboard is free.
 """
 
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 from datetime import datetime
 from pathlib import Path
@@ -36,10 +37,15 @@ URGENCY_DOT = {
     Urgency.MEDIUM: ":orange[●]",
     Urgency.LOW: ":grey[●]",
 }
+EMERGENCY_DOT = ":red[▲]"
 
 STATUS_LABEL = {APPROVED: "Sent", REJECTED: "Rejected", PENDING: "Needs review"}
 STATUS_COLOR = {APPROVED: "#059669", REJECTED: "#64748b", PENDING: "#2563eb"}
 ARCHIVED_COLOR = "#94a3b8"
+
+# Emergencies get their own colour, louder than high urgency alone, because
+# they jump the queue regardless of anything else in the inbox.
+EMERGENCY_COLOR = "#b91c1c"
 
 CSS = """
 <style>
@@ -185,25 +191,43 @@ def load_inbox() -> list[dict]:
 
 
 def sort_key(item: dict):
-    """High urgency first; un-analyzed emails sink to the bottom."""
+    """Emergencies first, then high urgency; un-analyzed emails sink last."""
     analysis = item["analysis"]
     if analysis is None:
-        return (3, item["subject"])
-    return (URGENCY_RANK[analysis.urgency], item["subject"])
+        return (2, 0, item["subject"])
+    if analysis.category is Category.EMERGENCY:
+        return (0, 0, item["subject"])
+    return (1, URGENCY_RANK[analysis.urgency], item["subject"])
 
 
 # --------------------------------------------------------------------------
 # Rendering helpers
 # --------------------------------------------------------------------------
 
+def esc(value: str) -> str:
+    """Escape text before it reaches an unsafe_allow_html block.
+
+    Model output and email-derived fields are untrusted: an inbound email can
+    carry markup in its signature, and the model will faithfully copy it into
+    a customer field. Rendered raw, that executes in the reviewer's browser.
+    """
+    return html.escape(str(value), quote=True)
+
+
 def badge(label: str, color: str | None = None) -> str:
     if color is None:
-        return f'<span class="badge badge-outline">{label}</span>'
-    return f'<span class="badge" style="background:{color}">{label}</span>'
+        return f'<span class="badge badge-outline">{esc(label)}</span>'
+    return f'<span class="badge" style="background:{color}">{esc(label)}</span>'
 
 
 def category_label(analysis: EmailAnalysis) -> str:
     return analysis.category.value.replace("_", " ").title()
+
+
+def is_emergency(item: dict) -> bool:
+    """True for an active leak, storm damage, or a safety risk."""
+    analysis = item["analysis"]
+    return analysis is not None and analysis.category is Category.EMERGENCY
 
 
 def is_spam(item: dict) -> bool:
@@ -216,10 +240,11 @@ def item_badges(item: dict) -> str:
     analysis = item["analysis"]
     if analysis is None:
         return badge("Not analyzed")
-    parts = [
-        badge(category_label(analysis)),
-        badge(analysis.urgency.value.upper(), URGENCY_COLOR[analysis.urgency]),
-    ]
+    if is_emergency(item):
+        parts = [badge("EMERGENCY", EMERGENCY_COLOR)]
+    else:
+        parts = [badge(category_label(analysis))]
+    parts.append(badge(analysis.urgency.value.upper(), URGENCY_COLOR[analysis.urgency]))
     if is_spam(item):
         parts.append(badge("Archived", ARCHIVED_COLOR))
     elif item["status"] != PENDING:
@@ -228,9 +253,11 @@ def item_badges(item: dict) -> str:
 
 
 def field(label: str, value: str | None) -> None:
-    st.markdown(f'<div class="field-label">{label}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="field-label">{esc(label)}</div>', unsafe_allow_html=True)
     if value:
-        st.markdown(f'<div class="field-value">{value}</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="field-value">{esc(value)}</div>', unsafe_allow_html=True
+        )
     else:
         st.markdown('<div class="field-empty">not provided</div>', unsafe_allow_html=True)
 
@@ -263,6 +290,7 @@ def render_sidebar(inbox: list[dict]) -> tuple[list[str], list[str]]:
         st.divider()
 
         analyzed = [i for i in inbox if i["analysis"]]
+        emergencies = sum(1 for i in analyzed if is_emergency(i))
         urgent = sum(1 for i in analyzed if i["analysis"].urgency is Urgency.HIGH)
         waiting = sum(
             1
@@ -270,8 +298,12 @@ def render_sidebar(inbox: list[dict]) -> tuple[list[str], list[str]]:
             if i["status"] == PENDING and not is_spam(i)
         )
 
-        left, right = st.columns(2)
+        if emergencies:
+            st.error(f"{emergencies} emergency email(s) awaiting action")
+
+        left, middle, right = st.columns(3)
         left.metric("Needs review", waiting)
+        middle.metric("Emergency", emergencies)
         right.metric("High urgency", urgent)
 
         st.divider()
@@ -285,7 +317,7 @@ def render_sidebar(inbox: list[dict]) -> tuple[list[str], list[str]]:
         st.caption(f"Model: `{active_model()}`")
         st.caption(
             f"{len(analyzed)}/{len(inbox)} emails loaded from the local cache. "
-            "Opening this dashboard costs no API quota."
+            "Opening this dashboard makes no API calls."
         )
     return picked_categories, picked_urgencies
 
@@ -313,11 +345,12 @@ def render_row(item: dict) -> None:
     """One clickable inbox row."""
     with st.container(border=True):
         is_open = item["id"] == st.session_state.get("selected")
-        label = (
-            f"{URGENCY_DOT[item['analysis'].urgency]} "
-            if item["analysis"]
-            else ":grey[○] "
-        )
+        if item["analysis"] is None:
+            label = ":grey[○] "
+        elif is_emergency(item):
+            label = f"{EMERGENCY_DOT} "
+        else:
+            label = f"{URGENCY_DOT[item['analysis'].urgency]} "
         if st.button(
             f"{label}{item['subject']}",
             key=f"open_{item['id']}",
@@ -346,13 +379,20 @@ def render_list(items: list[dict]) -> None:
         return
 
     # Spam is archived on arrival: out of the main flow, but still reachable.
-    active = [i for i in items if not is_spam(i)]
+    emergencies = [i for i in items if is_emergency(i)]
+    active = [i for i in items if not is_spam(i) and not is_emergency(i)]
     spam = [i for i in items if is_spam(i)]
+
+    if emergencies:
+        st.markdown(f":red[**Emergency ({len(emergencies)})**]")
+        for item in emergencies:
+            render_row(item)
+        st.markdown(":grey[**Everything else**]")
 
     if active:
         for item in active:
             render_row(item)
-    else:
+    elif not emergencies:
         st.info("Nothing to review.")
 
     if spam:
@@ -382,13 +422,22 @@ def render_detail(item: dict | None) -> None:
                     st.rerun()
             return
 
+        if is_emergency(item):
+            st.error(
+                "Emergency — active damage or a safety risk. Call the customer "
+                "rather than waiting on email."
+            )
+
         if item["status"] == APPROVED:
             st.success("Sent — this reply was approved.")
         elif item["status"] == REJECTED:
             st.warning("Rejected — this draft was discarded.")
 
-        st.markdown(f'<div class="field-label">Summary</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="field-value">{analysis.summary}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="field-label">Summary</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="field-value">{esc(analysis.summary)}</div>',
+            unsafe_allow_html=True,
+        )
         st.write("")
 
         customer = analysis.customer

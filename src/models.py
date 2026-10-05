@@ -15,8 +15,13 @@ _BULLETS = "-*•· \t"
 
 
 class Category(str, Enum):
-    """What the email is fundamentally asking for."""
+    """What the email is fundamentally asking for.
 
+    ``EMERGENCY`` outranks the others: an active leak is an emergency whether or
+    not the sender is also complaining about work we did.
+    """
+
+    EMERGENCY = "emergency"
     QUOTE_REQUEST = "quote_request"
     APPOINTMENT = "appointment"
     COMPLAINT = "complaint"
