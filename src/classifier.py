@@ -212,7 +212,8 @@ def analyze_email(text: str, use_cache: bool = True) -> EmailAnalysis:
         response = _get_client().messages.create(
             model=model,
             max_tokens=MAX_TOKENS,
-            temperature=0.2,
+            # No temperature: anthropic 1.x removed the sampling parameters from
+            # messages.create entirely. Repeatability comes from the disk cache.
             system=SYSTEM_INSTRUCTION,
             messages=[{"role": "user", "content": f"Analyze this email:\n\n{text}"}],
             tools=[CLASSIFY_TOOL],

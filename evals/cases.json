@@ -126,6 +126,30 @@
       "expected_urgency": "high",
       "note": "Storm damage with exposed decking and heavy rain forecast. Nothing is inside yet, but the structure is open, so this is an emergency rather than the complaint it reads as on the surface.",
       "email": "From: rcastellano.oh@gmail.com\nSubject: shingles came off in last night's wind - you did this roof in May\n\nMorning,\n\nThe wind last night took a strip of shingles off the back slope of our\nroof, the one your team installed in May. I can see the bare wood\nunderneath from the garden, it is maybe a metre and a half across.\n\nNothing is coming inside yet but there is heavy rain forecast for tonight\nand I am worried about what happens if that goes on uncovered. The roof is\nfive months old so I assume this is covered.\n\nCan someone get a tarp over it today at least?\n\nRafael Castellano\n52 Ashbourne Lane\n(614) 555-0935\n"
+    },
+    {
+      "id": "complaint_invoice_overrun",
+      "tricky": null,
+      "expected_category": "complaint",
+      "expected_urgency": "medium",
+      "note": "Unhappy about billing, not about the roof. The work is finished and sound, nothing is leaking or unsafe, but we owe them an answer about a figure they did not agree to.",
+      "email": "From: a.whitcombe@btinternet.com\nSubject: Invoice is 1,800 more than the quote\n\nHello,\n\nThe re-roof finished last Thursday and I have no complaints about the\nwork itself - the lads were tidy and the roof looks great.\n\nWhat I do have a problem with is the invoice. I was quoted 11,400 and\nthe bill that arrived yesterday is 13,200. Nobody rang me, nobody asked\nme to approve anything extra, and there is no breakdown on the invoice\nexplaining the difference.\n\nI am not refusing to pay but I am not paying an extra 1,800 until\nsomebody explains it to me in writing. Can you send an itemised\nbreakdown of what changed and why?\n\nAlan Whitcombe\n9 Beckford Terrace\n(614) 555-0470\n"
+    },
+    {
+      "id": "complaint_german_mess",
+      "tricky": "German-language complaint",
+      "expected_category": "complaint",
+      "expected_urgency": "medium",
+      "note": "German complaint about site tidiness and a damaged flowerbed. The roof itself is explicitly fine, so this is a complaint at medium, not an emergency. Tests that a non-English complaint is not mistaken for an emergency or a quote request.",
+      "email": "From: brigitte.lenz@gmx.de\nSubject: Beschwerde über die Baustelle\n\nGuten Tag,\n\nIhre Mitarbeiter haben letzte Woche unser Dach fertiggestellt. Mit dem\nDach selbst sind wir zufrieden, es ist alles dicht und sauber gearbeitet.\n\nAllerdings wurde der Garten in einem schlimmen Zustand hinterlassen.\nÜberall liegen Schindelreste und alte Nägel, das Blumenbeet an der\nSüdseite ist komplett zertrampelt und am Zaun haben wir Zigarettenstummel\ngefunden. Mein Mann hat gestern zwei Stunden damit verbracht, Nägel\naufzusammeln, weil wir einen Hund haben.\n\nWir erwarten, dass jemand vorbeikommt und das ordentlich aufräumt. Für\ndas zertrampelte Beet hätten wir gern einen Vorschlag zur Wiedergutmachung.\n\nMit freundlichen Grüßen\nBrigitte Lenz\nLindenstraße 8\nTelefon: 0151 5559842\n"
+    },
+    {
+      "id": "general_agent_confirmation",
+      "tricky": null,
+      "expected_category": "general",
+      "expected_urgency": "low",
+      "note": "Third-party enquiry asking us to confirm completed work for a property sale. No pricing, no visit to book, and the sender gives a generous deadline, so it is general at low urgency.",
+      "email": "From: j.pemberton@halloway-residential.com\nSubject: Confirmation of roof works - 22 Alderney Drive\n\nGood morning,\n\nI am handling the sale of 22 Alderney Drive on behalf of the vendor, and\nthe buyer's solicitor has asked for confirmation of the roof works your\ncompany carried out there.\n\nWould you be able to confirm in writing what was done, the date it was\ncompleted, and whether any guarantee remains in force? The vendor has\ngiven permission for you to share this with us.\n\nThere is no great rush - exchange is not expected for another month.\n\nKind regards,\nJames Pemberton\nHalloway Residential\n(614) 555-0255\n"
     }
   ]
 }

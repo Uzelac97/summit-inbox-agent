@@ -74,6 +74,33 @@ def percent(part: int, whole: int) -> str:
     return f"{100 * part / whole:5.1f}%" if whole else "    n/a"
 
 
+def print_per_category_table(outcomes: list[Outcome]) -> None:
+    """Break accuracy down by the category a case was labelled with.
+
+    An overall figure hides which category is actually weak, and with only a
+    handful of cases per category one miss moves a column a long way - so the
+    case count is printed alongside the rate.
+    """
+    ran = [o for o in outcomes if o.ran]
+    by_category: dict[str, list[Outcome]] = {}
+    for outcome in ran:
+        by_category.setdefault(outcome.expected_category, []).append(outcome)
+
+    print("ACCURACY BY EXPECTED CATEGORY")
+    print(f"  {'category':<15} {'n':>2}   {'category':<14} {'urgency':<14}")
+    print(f"  {'-' * 13:<15} {'--':>2}   {'-' * 12:<14} {'-' * 12:<14}")
+    for name in sorted(by_category):
+        group = by_category[name]
+        cat_ok = sum(o.category_ok for o in group)
+        urg_ok = sum(o.urgency_ok for o in group)
+        print(
+            f"  {name:<15} {len(group):>2}   "
+            f"{cat_ok}/{len(group)} {percent(cat_ok, len(group))}   "
+            f"{urg_ok}/{len(group)} {percent(urg_ok, len(group))}"
+        )
+    print()
+
+
 def print_mismatch_table(mismatches: list[Outcome]) -> None:
     print("MISMATCHES")
     if not mismatches:
@@ -185,6 +212,7 @@ def main() -> int:
     summary = score(outcomes)
     if args.all:
         print_pass_table(outcomes)
+    print_per_category_table(outcomes)
     print_mismatch_table(summary["mismatches"])
 
     scored = summary["ran"]
