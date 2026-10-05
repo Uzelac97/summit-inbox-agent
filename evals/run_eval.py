@@ -42,6 +42,10 @@ class Outcome:
     got_category: str | None = None
     got_urgency: str | None = None
     error: str | None = None
+    # Only set for cases that declare expected_customer_name.
+    expected_name: str | None = None
+    got_name: str | None = None
+    greeting: str = ""
 
     @property
     def ran(self) -> bool:
@@ -55,6 +59,29 @@ class Outcome:
     def urgency_ok(self) -> bool:
         return self.ran and self.got_urgency == self.expected_urgency
 
+    @property
+    def checks_name(self) -> bool:
+        return self.expected_name is not None
+
+    @property
+    def name_ok(self) -> bool:
+        return self.ran and self.got_name == self.expected_name
+
+    @property
+    def greeting_ok(self) -> bool:
+        """True when the draft greets the name that was recorded.
+
+        A record naming one person and a reply greeting another is wrong even
+        when the recorded name itself is right, so this is checked separately.
+        """
+        if not self.ran or not self.got_name:
+            return False
+        # Any part of the name counts. A formal German reply opens "Guten Tag
+        # Herr Brandt," - correct, and it addresses the surname, so requiring
+        # the first name would fail a draft that is right.
+        greeting = self.greeting.lower()
+        return any(part.lower() in greeting for part in self.got_name.split())
+
 
 def score(outcomes: list[Outcome]) -> dict:
     """Summarize outcomes. Pure function: no I/O, so it is testable on its own."""
@@ -67,6 +94,9 @@ def score(outcomes: list[Outcome]) -> dict:
         "urgency_ok": sum(o.urgency_ok for o in ran),
         "both_ok": sum(o.category_ok and o.urgency_ok for o in ran),
         "mismatches": [o for o in ran if not (o.category_ok and o.urgency_ok)],
+        "name_checked": [o for o in ran if o.checks_name],
+        "name_bad": [o for o in ran if o.checks_name
+                     and not (o.name_ok and o.greeting_ok)],
     }
 
 
@@ -192,6 +222,11 @@ def main() -> int:
             analysis = analyze_email(text)
             outcome.got_category = analysis.category.value
             outcome.got_urgency = analysis.urgency.value
+            outcome.expected_name = case.get("expected_customer_name")
+            outcome.got_name = analysis.customer.name
+            outcome.greeting = next(
+                (l for l in analysis.draft_reply.splitlines() if l.strip()), ""
+            )
         except Exception as exc:
             outcome.error = f"{type(exc).__name__}: {exc}"
 
@@ -214,6 +249,23 @@ def main() -> int:
         print_pass_table(outcomes)
     print_per_category_table(outcomes)
     print_mismatch_table(summary["mismatches"])
+
+    name_checked = summary["name_checked"]
+    if name_checked:
+        print("CUSTOMER NAME (cases that declare an expected name)")
+        bad = summary["name_bad"]
+        if not bad:
+            print(
+                f"  {len(name_checked)}/{len(name_checked)} correct, and every "
+                "draft greets the recorded name\n"
+            )
+        else:
+            print(f"  {'case':<28} {'expected':<18} {'recorded':<18} greeting")
+            for o in bad:
+                greet = (o.greeting[:28] + "...") if len(o.greeting) > 28 else o.greeting
+                print(f"  {o.case_id:<28} {str(o.expected_name):<18} "
+                      f"{str(o.got_name):<18} {greet}")
+            print()
 
     scored = summary["ran"]
     print("ACCURACY")

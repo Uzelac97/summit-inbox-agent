@@ -74,7 +74,12 @@ pressing the paperwork. Hail or storm damage that an insurer has approved for \
 repair is medium while the roof is still weatherproof; it becomes high only \
 once water is getting in or the structure is open.
   - low: information, paperwork, and budgeting enquiries with no time \
-pressure, and all spam.
+pressure, and all spam. Low is for email where nothing needs scheduling at \
+all.
+
+  A request to book, move, or confirm a visit is medium even when the sender \
+says there is no rush and suggests a date weeks away. We still owe them a \
+date, and that is a concrete action waiting on us.
 
   Time pressure on its own is never enough for high. A named deadline, an \
 insurance cut-off, a visit booked for tomorrow, a customer who has taken a day \
@@ -91,6 +96,14 @@ at risk"; if all three answers are no, the email is not high no matter how \
 much else is stacked on it.
 - Extract the customer's contact details. Only record what the email actually \
 states; leave a field empty rather than guessing or inferring it.
+
+  For the name, use the name the sender signs off with in the body of the \
+email, because that is the person who actually wrote it. Fall back to the \
+display name in the From header only when the body carries no signature name: \
+a shared, family, or business mailbox frequently shows someone else's name \
+there. If neither gives a name, leave it empty. The greeting in the draft \
+reply must address exactly the name you put in the customer name field, so the \
+record and the reply can never name two different people.
 - List the information we still need before we can quote, schedule, or resolve \
 the request. If nothing is missing, return an empty list.
 - Write the draft reply as Summit Roofing: friendly, professional, and \

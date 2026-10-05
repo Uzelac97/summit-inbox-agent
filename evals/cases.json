@@ -14,7 +14,8 @@
       "expected_category": "quote_request",
       "expected_urgency": "low",
       "note": "Baseline quote request with no time pressure.",
-      "email": "From: m.delgado44@gmail.com\nSubject: Roof replacement quote\n\nHello,\n\nOur roof is about 22 years old and we are starting to think about replacing\nit. Nothing is wrong with it right now, we just want to budget for it over\nthe next year or two.\n\nCould you send us a quote for a full replacement? The house is a two-storey\ncolonial, roughly 2,200 square feet.\n\nThanks,\nMarco Delgado\n41 Hartley Road\n(614) 555-0144\n"
+      "email": "From: m.delgado44@gmail.com\nSubject: Roof replacement quote\n\nHello,\n\nOur roof is about 22 years old and we are starting to think about replacing\nit. Nothing is wrong with it right now, we just want to budget for it over\nthe next year or two.\n\nCould you send us a quote for a full replacement? The house is a two-storey\ncolonial, roughly 2,200 square feet.\n\nThanks,\nMarco Delgado\n41 Hartley Road\n(614) 555-0144\n",
+      "expected_customer_name": "Marco Delgado"
     },
     {
       "id": "quote_insurance_deadline",
@@ -54,7 +55,8 @@
       "expected_category": "complaint",
       "expected_urgency": "medium",
       "note": "Furious tone, but the underlying problem is cleanup with no active damage. Tests that anger alone does not push urgency to high.",
-      "email": "From: dwilkins1962@outlook.com\nSubject: ABSOLUTELY UNACCEPTABLE\n\nI do not know who trained your crew but this is the sloppiest job I have\never seen. They finished the roof on Monday and left roofing nails ALL OVER\nmy driveway and front lawn. My wife picked one up in her car tyre yesterday\nand that is a 180 dollar repair I did not ask for.\n\nNobody swept up. Nobody even said goodbye. For 14,000 dollars I expected\nbetter than this and frankly I am embarrassed I recommended you to my\nneighbour.\n\nI want someone out here with a magnet sweeper and I want the tyre paid for.\nDo not send me a survey asking how we did.\n\nDoug Wilkins\n6 Pinehurst Drive\n"
+      "email": "From: dwilkins1962@outlook.com\nSubject: ABSOLUTELY UNACCEPTABLE\n\nI do not know who trained your crew but this is the sloppiest job I have\never seen. They finished the roof on Monday and left roofing nails ALL OVER\nmy driveway and front lawn. My wife picked one up in her car tyre yesterday\nand that is a 180 dollar repair I did not ask for.\n\nNobody swept up. Nobody even said goodbye. For 14,000 dollars I expected\nbetter than this and frankly I am embarrassed I recommended you to my\nneighbour.\n\nI want someone out here with a magnet sweeper and I want the tyre paid for.\nDo not send me a survey asking how we did.\n\nDoug Wilkins\n6 Pinehurst Drive\n",
+      "expected_customer_name": "Doug Wilkins"
     },
     {
       "id": "polite_urgent_nursery",
@@ -94,7 +96,8 @@
       "expected_category": "quote_request",
       "expected_urgency": "high",
       "note": "German email reporting damp ceiling patches but no active dripping, plus a two-week scheduling wish. Any water ingress counts as high, because a missed leak costs far more than one unnecessary fast response. The category stays quote_request: slow damage is classified by what the sender is asking for, and only actively running water is the emergency category. Also tests extraction from, and a reply in, a non-English email.",
-      "email": "From: s.brandt@webmail.de\nSubject: Angebot fuer neues Dach\n\nGuten Tag,\n\nwir haben ein Reihenhaus in Grandview Heights, das Dach ist etwa 30 Jahre\nalt. Bei starkem Regen sehen wir inzwischen feuchte Stellen an der Decke im\nObergeschoss, es tropft aber noch nicht.\n\nKoennten Sie uns ein Angebot fuer eine komplette Neueindeckung machen? Ein\nTermin in den naechsten zwei Wochen waere uns sehr willkommen.\n\nMit freundlichen Gruessen\nStefan Brandt\nAhornweg 14\nTelefon: 0170 5551234\n"
+      "email": "From: s.brandt@webmail.de\nSubject: Angebot fuer neues Dach\n\nGuten Tag,\n\nwir haben ein Reihenhaus in Grandview Heights, das Dach ist etwa 30 Jahre\nalt. Bei starkem Regen sehen wir inzwischen feuchte Stellen an der Decke im\nObergeschoss, es tropft aber noch nicht.\n\nKoennten Sie uns ein Angebot fuer eine komplette Neueindeckung machen? Ein\nTermin in den naechsten zwei Wochen waere uns sehr willkommen.\n\nMit freundlichen Gruessen\nStefan Brandt\nAhornweg 14\nTelefon: 0170 5551234\n",
+      "expected_customer_name": "Stefan Brandt"
     },
     {
       "id": "spam_as_quote",
@@ -142,7 +145,8 @@
       "expected_category": "complaint",
       "expected_urgency": "medium",
       "note": "German complaint about site tidiness and a damaged flowerbed. The roof itself is explicitly fine, so this is a complaint at medium, not an emergency. Tests that a non-English complaint is not mistaken for an emergency or a quote request.",
-      "email": "From: brigitte.lenz@gmx.de\nSubject: Beschwerde über die Baustelle\n\nGuten Tag,\n\nIhre Mitarbeiter haben letzte Woche unser Dach fertiggestellt. Mit dem\nDach selbst sind wir zufrieden, es ist alles dicht und sauber gearbeitet.\n\nAllerdings wurde der Garten in einem schlimmen Zustand hinterlassen.\nÜberall liegen Schindelreste und alte Nägel, das Blumenbeet an der\nSüdseite ist komplett zertrampelt und am Zaun haben wir Zigarettenstummel\ngefunden. Mein Mann hat gestern zwei Stunden damit verbracht, Nägel\naufzusammeln, weil wir einen Hund haben.\n\nWir erwarten, dass jemand vorbeikommt und das ordentlich aufräumt. Für\ndas zertrampelte Beet hätten wir gern einen Vorschlag zur Wiedergutmachung.\n\nMit freundlichen Grüßen\nBrigitte Lenz\nLindenstraße 8\nTelefon: 0151 5559842\n"
+      "email": "From: brigitte.lenz@gmx.de\nSubject: Beschwerde über die Baustelle\n\nGuten Tag,\n\nIhre Mitarbeiter haben letzte Woche unser Dach fertiggestellt. Mit dem\nDach selbst sind wir zufrieden, es ist alles dicht und sauber gearbeitet.\n\nAllerdings wurde der Garten in einem schlimmen Zustand hinterlassen.\nÜberall liegen Schindelreste und alte Nägel, das Blumenbeet an der\nSüdseite ist komplett zertrampelt und am Zaun haben wir Zigarettenstummel\ngefunden. Mein Mann hat gestern zwei Stunden damit verbracht, Nägel\naufzusammeln, weil wir einen Hund haben.\n\nWir erwarten, dass jemand vorbeikommt und das ordentlich aufräumt. Für\ndas zertrampelte Beet hätten wir gern einen Vorschlag zur Wiedergutmachung.\n\nMit freundlichen Grüßen\nBrigitte Lenz\nLindenstraße 8\nTelefon: 0151 5559842\n",
+      "expected_customer_name": "Brigitte Lenz"
     },
     {
       "id": "general_agent_confirmation",
@@ -159,6 +163,16 @@
       "expected_urgency": "low",
       "note": "Bulk mail imitating a billing notice from a trade directory, complete with a fabricated account number and a payment deadline. Tests that an invented deadline in spam does not lift urgency, and that an official tone does not make it general.",
       "email": "From: accounts@trade-listings-national.net\nSubject: ACTION REQUIRED: Summit Roofing listing renewal 2026 (Ref TLN-884213)\n\nDear Business Owner,\n\nOur records indicate that your business listing for SUMMIT ROOFING is due\nfor renewal. Account reference: TLN-884213.\n\nRenewal amount: 487.00 USD\nPayment due: within 14 days of this notice\n\nFailure to remit payment may result in removal of your listing from the\nNational Trade Listings directory and associated partner networks, which\nmay affect your online visibility.\n\nTo renew, reply to this email with your preferred payment method and a\nmember of our accounts team will be in touch.\n\nThis is not a bill. This is a solicitation for the order of services and\nyou are under no obligation to pay unless you accept this offer.\n\nAccounts Department\nNational Trade Listings\n"
+    },
+    {
+      "id": "appointment_shared_mailbox",
+      "tricky": "From display name differs from the signature",
+      "expected_category": "appointment",
+      "expected_urgency": "medium",
+      "expected_customer_name": "Siobhan Hanley",
+      "note": "Sent from a household mailbox whose From display name is Robert Hanley, but signed by Siobhan Hanley. The name recorded must be the one in the signature, since that is who wrote the email, and the draft greeting must address that same name. Scheduling with no damage reported makes this medium.",
+      "email": "From: Robert Hanley <hanley.household@gmail.com>\nSubject: Booking the annual inspection\n\nHello,\n\nMy husband spoke to one of your surveyors at the home show last month and\nthey suggested we get the annual inspection booked in before winter.\n\nThe roof is in good order as far as we can tell - no leaks, nothing loose\nthat we can see - we would just like it looked over properly. Any weekday\nin the second half of next month would suit us.\n\nCould you let us know what dates you have?\n\nMany thanks,\nSiobhan Hanley\n4 Ravensworth Close\n(614) 555-0613\n"
     }
-  ]
+  ],
+  "name_rule": "customer.name comes from the signature in the body, falling back to the From display name only when the body carries no signature name. The draft reply's greeting must address the recorded name. Cases carrying expected_customer_name are checked against both."
 }
