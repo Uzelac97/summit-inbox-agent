@@ -220,12 +220,13 @@ def get_credentials() -> Credentials:
 class GmailClient:
     """Thin wrapper over the Gmail API.
 
-    Only read operations exist so far. Labelling and draft creation arrive with
-    the steps that need them, so nothing here can yet change a mailbox.
+    Reading, and applying labels. Draft creation arrives with the step that
+    needs it. Sending is impossible: the scopes above do not permit it.
     """
 
     def __init__(self, service: Any | None = None) -> None:
         self._service = service
+        self._label_ids: Dict[str, str] | None = None
 
     @property
     def service(self) -> Any:
@@ -260,6 +261,56 @@ class GmailClient:
             .get(userId="me", id=message_id, format="full")
             .execute()
         )
+
+    # ---- labels ---------------------------------------------------------
+
+    def label_ids(self, refresh: bool = False) -> Dict[str, str]:
+        """Map of label name to label id, fetched once and cached."""
+        if self._label_ids is None or refresh:
+            response = self.service.users().labels().list(userId="me").execute()
+            self._label_ids = {
+                item["name"]: item["id"] for item in response.get("labels", [])
+            }
+        return self._label_ids
+
+    def ensure_label(self, name: str) -> str:
+        """Return the id of ``name``, creating the label if it is missing.
+
+        Gmail creates the parent of a nested name implicitly, so asking for
+        ``agent/quote`` also produces the ``agent`` group in the sidebar.
+        """
+        existing = self.label_ids().get(name)
+        if existing:
+            return existing
+
+        created = (
+            self.service.users()
+            .labels()
+            .create(
+                userId="me",
+                body={
+                    "name": name,
+                    "labelListVisibility": "labelShow",
+                    "messageListVisibility": "show",
+                },
+            )
+            .execute()
+        )
+        self.label_ids()[name] = created["id"]
+        return created["id"]
+
+    def ensure_labels(self, names: List[str]) -> Dict[str, str]:
+        """Create any of ``names`` that do not exist yet."""
+        return {name: self.ensure_label(name) for name in names}
+
+    def add_labels(self, message_id: str, names: List[str]) -> None:
+        """Add labels to a message. Nothing is ever removed."""
+        if not names:
+            return
+        ids = [self.ensure_label(name) for name in names]
+        self.service.users().messages().modify(
+            userId="me", id=message_id, body={"addLabelIds": ids}
+        ).execute()
 
     def get_headers(self, message_id: str, names: List[str]) -> Dict[str, str]:
         """Fetch only the named headers, leaving the body on the server."""
