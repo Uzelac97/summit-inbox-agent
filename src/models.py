@@ -49,6 +49,10 @@ class InboundEmail(BaseModel):
         default="",
         description="The Message-ID header, which In-Reply-To must quote.",
     )
+    references: str = Field(
+        default="",
+        description="The References header, so a reply keeps the whole chain.",
+    )
     origin: str = Field(
         default="", description="Where this came from, for display: a filename or a mailbox."
     )

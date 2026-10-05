@@ -29,7 +29,25 @@ PROCESSED_LABEL = "agent/processed"
 
 ALL_LABELS = sorted(set(CATEGORY_LABELS.values()) | {PROCESSED_LABEL})
 
+# Gmail accepts only a fixed palette for label colours; an arbitrary hex is
+# rejected with a 400. Every value below was checked against the live API.
+# Both backgroundColor and textColor are required - sending one alone fails.
+LABEL_COLORS = {
+    "agent/emergency": {"backgroundColor": "#fb4c2f", "textColor": "#ffffff"},
+    "agent/complaint": {"backgroundColor": "#ffad47", "textColor": "#000000"},
+    "agent/quote": {"backgroundColor": "#16a766", "textColor": "#ffffff"},
+    "agent/appointment": {"backgroundColor": "#a479e2", "textColor": "#ffffff"},
+    "agent/general": {"backgroundColor": "#4a86e8", "textColor": "#ffffff"},
+    "agent/spam": {"backgroundColor": "#999999", "textColor": "#ffffff"},
+    PROCESSED_LABEL: {"backgroundColor": "#cccccc", "textColor": "#000000"},
+}
+
 
 def label_for(category: Category) -> str:
     """The Gmail label for a category."""
     return CATEGORY_LABELS[category]
+
+
+def color_for(name: str) -> dict | None:
+    """The colour for a label, or None if it should keep Gmail's default."""
+    return LABEL_COLORS.get(name)

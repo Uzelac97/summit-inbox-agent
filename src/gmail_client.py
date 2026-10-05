@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import base64
 import re
+from email.message import EmailMessage
 from email.utils import parseaddr
 from html import unescape
 from pathlib import Path
@@ -171,6 +172,51 @@ def extract_attachments(payload: Dict[str, Any]) -> List[AttachmentInfo]:
     return found
 
 
+# --------------------------------------------------------------------------
+# Replies
+# --------------------------------------------------------------------------
+
+def reply_subject(subject: str) -> str:
+    """``Re:`` the subject without stacking a second one."""
+    subject = subject.strip()
+    if not subject:
+        return "Re:"
+    if subject.lower().startswith("re:"):
+        return subject
+    return f"Re: {subject}"
+
+
+def build_reply_mime(
+    to: str,
+    subject: str,
+    body: str,
+    in_reply_to: str = "",
+    references: str = "",
+) -> str:
+    """Build a base64url RFC822 reply, ready for drafts.create.
+
+    Threading needs three things to agree, and Gmail's own threadId is only
+    one of them: ``In-Reply-To`` must quote the parent's Message-ID, and
+    ``References`` must carry the chain so other mail clients thread it too.
+    A draft with the right threadId but no headers looks correct through the
+    API and shows up detached in a non-Gmail client.
+    """
+    message = EmailMessage()
+    message["To"] = to
+    message["Subject"] = reply_subject(subject)
+    if in_reply_to:
+        message["In-Reply-To"] = in_reply_to
+        # The parent's own chain, then the parent itself, oldest first.
+        chain = f"{references} {in_reply_to}".strip()
+        message["References"] = " ".join(chain.split())
+    # utf-8 so a German reply keeps its umlauts, and quoted-printable rather
+    # than the default 8bit: 8bit needs the 8BITMIME extension to survive a
+    # strict SMTP hop, while quoted-printable travels anywhere and leaves the
+    # ASCII parts readable.
+    message.set_content(body, charset="utf-8", cte="quoted-printable")
+    return base64.urlsafe_b64encode(message.as_bytes()).decode("ascii")
+
+
 def _load_saved_credentials() -> Credentials | None:
     """Return stored credentials, refreshing them if they have expired."""
     if not TOKEN_FILE.exists():
@@ -277,40 +323,75 @@ class GmailClient:
         """Return the id of ``name``, creating the label if it is missing.
 
         Gmail creates the parent of a nested name implicitly, so asking for
-        ``agent/quote`` also produces the ``agent`` group in the sidebar.
+        ``agent/quote`` also produces the ``agent`` group in the sidebar. A
+        label that already exists has its colour brought up to date, so a
+        palette change reaches labels created by an earlier run.
         """
+        from src.labels import color_for
+
+        color = color_for(name)
         existing = self.label_ids().get(name)
         if existing:
+            if color:
+                self.service.users().labels().patch(
+                    userId="me", id=existing, body={"color": color}
+                ).execute()
             return existing
 
+        body: Dict[str, Any] = {
+            "name": name,
+            "labelListVisibility": "labelShow",
+            "messageListVisibility": "show",
+        }
+        if color:
+            body["color"] = color
+
         created = (
-            self.service.users()
-            .labels()
-            .create(
-                userId="me",
-                body={
-                    "name": name,
-                    "labelListVisibility": "labelShow",
-                    "messageListVisibility": "show",
-                },
-            )
-            .execute()
+            self.service.users().labels().create(userId="me", body=body).execute()
         )
         self.label_ids()[name] = created["id"]
         return created["id"]
 
     def ensure_labels(self, names: List[str]) -> Dict[str, str]:
-        """Create any of ``names`` that do not exist yet."""
+        """Create any of ``names`` that do not exist yet, and colour them all."""
         return {name: self.ensure_label(name) for name in names}
 
     def add_labels(self, message_id: str, names: List[str]) -> None:
-        """Add labels to a message. Nothing is ever removed."""
+        """Add labels to a message."""
         if not names:
             return
         ids = [self.ensure_label(name) for name in names]
         self.service.users().messages().modify(
             userId="me", id=message_id, body={"addLabelIds": ids}
         ).execute()
+
+    def remove_labels(self, message_id: str, names: List[str]) -> None:
+        """Remove labels from a message, ignoring any that do not exist."""
+        ids = [self.label_ids()[n] for n in names if n in self.label_ids()]
+        if not ids:
+            return
+        self.service.users().messages().modify(
+            userId="me", id=message_id, body={"removeLabelIds": ids}
+        ).execute()
+
+    # ---- drafts ---------------------------------------------------------
+
+    def create_draft(self, thread_id: str, raw_message: str) -> str:
+        """Save a draft into ``thread_id`` and return its id. Never sends.
+
+        The scopes in use cannot send, so the worst a bug here can do is leave
+        an unwanted draft in the mailbox.
+        """
+        draft = (
+            self.service.users()
+            .drafts()
+            .create(
+                userId="me",
+                body={"message": {"threadId": thread_id, "raw": raw_message}},
+            )
+            .execute()
+        )
+        return draft["id"]
 
     def get_headers(self, message_id: str, names: List[str]) -> Dict[str, str]:
         """Fetch only the named headers, leaving the body on the server."""

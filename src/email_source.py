@@ -135,6 +135,7 @@ class GmailSource:
                         source_id=message["id"],
                         thread_id=message.get("threadId", ""),
                         rfc822_message_id=headers.get("message-id", ""),
+                        references=headers.get("references", ""),
                         origin="gmail",
                         sender=sender,
                         subject=subject,

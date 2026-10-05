@@ -10,6 +10,7 @@ import logging
 from dataclasses import dataclass
 
 from src.classifier import analyze_email
+from src.gmail_client import build_reply_mime
 from src.labels import ALL_LABELS, PROCESSED_LABEL, label_for
 from src.models import EmailAnalysis, InboundEmail
 
@@ -23,6 +24,8 @@ class Result:
     email: InboundEmail
     analysis: EmailAnalysis | None = None
     labels_applied: tuple[str, ...] = ()
+    draft_id: str | None = None
+    draft_skipped: str = ""
     error: str | None = None
 
     @property
@@ -50,26 +53,52 @@ class Processor:
         self.client.ensure_labels(ALL_LABELS)
 
     def process(self, email: InboundEmail) -> Result:
-        """Analyze one email and label it.
+        """Analyze one email, label it, and draft a reply.
 
-        The category label goes on first and ``agent/processed`` last, so an
+        ``agent/processed`` is applied last, after the draft exists, so an
         email interrupted part way through is picked up again on the next run.
-        A duplicate label is harmless; a silently skipped emergency is not.
+        A duplicate label is harmless and a duplicate draft is recoverable; a
+        silently skipped emergency is not.
         """
         result = Result(email=email)
         try:
             result.analysis = analyze_email(email.prompt_text)
             category_label = label_for(result.analysis.category)
+            draft_body = result.analysis.draft_reply.strip()
+
+            if not draft_body:
+                # Spam gets no reply by design, so there is nothing to draft.
+                result.draft_skipped = "no reply drafted for this category"
+            elif not email.thread_id:
+                # Without a thread there is nothing to reply into; sample
+                # emails have no mailbox behind them.
+                result.draft_skipped = "no thread to reply into"
 
             if self.dry_run:
                 log.info(
-                    "dry run: would label %s with %s then %s",
-                    email.source_id, category_label, PROCESSED_LABEL,
+                    "dry run: would label %s with %s, %s, then %s",
+                    email.source_id,
+                    category_label,
+                    result.draft_skipped or "draft a reply",
+                    PROCESSED_LABEL,
                 )
                 result.labels_applied = (category_label, PROCESSED_LABEL)
                 return result
 
             self.client.add_labels(email.source_id, [category_label])
+
+            if not result.draft_skipped:
+                result.draft_id = self.client.create_draft(
+                    email.thread_id,
+                    build_reply_mime(
+                        to=email.sender,
+                        subject=email.subject,
+                        body=draft_body,
+                        in_reply_to=email.rfc822_message_id,
+                        references=email.references,
+                    ),
+                )
+
             # Only now is the email genuinely handled.
             self.client.add_labels(email.source_id, [PROCESSED_LABEL])
             result.labels_applied = (category_label, PROCESSED_LABEL)
