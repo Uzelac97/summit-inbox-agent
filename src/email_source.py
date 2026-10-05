@@ -8,11 +8,14 @@ lets DEMO_MODE switch between them without the rest of the app noticing.
 
 from __future__ import annotations
 
+import logging
 import re
 from pathlib import Path
 from typing import List, Protocol, runtime_checkable
 
 from src.models import InboundEmail
+
+log = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = ROOT / "samples"
@@ -58,6 +61,90 @@ def split_headers(text: str) -> tuple[dict[str, str], str]:
         index = len(lines)
 
     return headers, "\n".join(lines[index:]).strip()
+
+
+class GmailSource:
+    """The real mailbox, read through :class:`~src.gmail_client.GmailClient`.
+
+    Fetching is read-only: messages are downloaded and parsed, and nothing is
+    labelled, drafted, or sent. The caller decides what to do with the result.
+    """
+
+    def __init__(
+        self,
+        client: object | None = None,
+        query: str = "in:inbox",
+        skip_own: bool = True,
+    ) -> None:
+        # Imported here so demo mode never pays for the Google libraries, and
+        # so a broken OAuth setup cannot stop the sample path from working.
+        from src.gmail_client import GmailClient
+
+        self.client = client or GmailClient()
+        self.query = query
+        self.skip_own = skip_own
+        self._own_address: str | None = None
+
+    def own_address(self) -> str:
+        """The mailbox's own address, fetched once per source."""
+        if self._own_address is None:
+            self._own_address = self.client.address()
+        return self._own_address
+
+    def _is_own_message(self, sender: str) -> bool:
+        """True when the mailbox sent this itself.
+
+        The inbox receives the mailbox's own automated mail - n8n quote and
+        error notifications. Those must never be classified, labelled, or
+        replied to: drafting a reply to ourselves would be noise at best, and a
+        self-sustaining loop at worst.
+        """
+        from src.gmail_client import normalize_address
+
+        if not self.skip_own:
+            return False
+        return normalize_address(sender) == normalize_address(self.own_address())
+
+    def fetch(self, limit: int = DEFAULT_LIMIT) -> List[InboundEmail]:
+        """Return up to ``limit`` emails, skipping the mailbox's own mail.
+
+        A message that cannot be read is logged and skipped rather than ending
+        the run: one malformed email in an inbox must not stop the other
+        nineteen from being triaged.
+        """
+        from src.gmail_client import extract_attachments, extract_body
+
+        emails: List[InboundEmail] = []
+        for message_id in self.client.list_message_ids(self.query, limit):
+            try:
+                message = self.client.get_message(message_id)
+                payload = message.get("payload", {})
+                headers = {
+                    h["name"].lower(): h["value"]
+                    for h in payload.get("headers", [])
+                }
+                sender = headers.get("from", "")
+                subject = headers.get("subject", "")
+
+                if self._is_own_message(sender):
+                    log.info("skipped: own message (%s)", subject or message_id)
+                    continue
+
+                emails.append(
+                    InboundEmail(
+                        source_id=message["id"],
+                        thread_id=message.get("threadId", ""),
+                        rfc822_message_id=headers.get("message-id", ""),
+                        origin="gmail",
+                        sender=sender,
+                        subject=subject,
+                        body=extract_body(payload),
+                        attachments=extract_attachments(payload),
+                    )
+                )
+            except Exception:
+                log.exception("skipped: could not read message %s", message_id)
+        return emails
 
 
 class SampleSource:

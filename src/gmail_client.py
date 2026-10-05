@@ -13,8 +13,12 @@ it reached, and lists recent subjects. It writes nothing to the mailbox.
 
 from __future__ import annotations
 
+import base64
+import re
+from email.utils import parseaddr
+from html import unescape
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterator, List
 
 from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
@@ -22,6 +26,8 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+
+from src.models import AttachmentInfo
 
 ROOT = Path(__file__).resolve().parent.parent
 CREDENTIALS_FILE = ROOT / "credentials.json"
@@ -49,6 +55,120 @@ To create it:
 
 The downloaded file is named client_secret_<long-id>.apps.googleusercontent.com
 .json, so it has to be renamed. It is already gitignored."""
+
+
+# --------------------------------------------------------------------------
+# Addresses
+# --------------------------------------------------------------------------
+
+def normalize_address(value: str) -> str:
+    """Reduce an address to a comparable form.
+
+    Gmail ignores dots in a gmail.com local part and anything after a ``+``, so
+    ``summit.roofing.demo11+n8n@gmail.com`` and ``summitroofingdemo11@gmail.com``
+    are one mailbox. Comparing raw header strings would let a plus-addressed
+    notification past the self-sent filter.
+    """
+    _, address = parseaddr(value)
+    address = address.strip().lower()
+    if "@" not in address:
+        return address
+
+    local, _, domain = address.partition("@")
+    local = local.split("+", 1)[0]
+    if domain in {"gmail.com", "googlemail.com"}:
+        local = local.replace(".", "")
+        domain = "gmail.com"
+    return f"{local}@{domain}"
+
+
+# --------------------------------------------------------------------------
+# MIME
+# --------------------------------------------------------------------------
+
+_SCRIPT_STYLE_RE = re.compile(r"<(script|style)\b.*?</\1\s*>", re.S | re.I)
+_BREAK_RE = re.compile(r"(?i)<\s*(br|/p|/div|/tr|/li|/h[1-6]|/table)\s*/?\s*>")
+_TAG_RE = re.compile(r"<[^>]+>")
+_BLANK_RUN_RE = re.compile(r"\n{3,}")
+
+
+def html_to_text(html: str) -> str:
+    """Flatten an HTML body to something worth classifying.
+
+    Deliberately crude - no parser dependency. Block-level tags become line
+    breaks so paragraphs survive, scripts and styles are dropped so their
+    contents are not mistaken for prose, and entities are unescaped. Marketing
+    mail still flattens untidily, but a misread spam body costs a wasted
+    classification, not a wrong reply.
+    """
+    text = _SCRIPT_STYLE_RE.sub(" ", html)
+    text = _BREAK_RE.sub("\n", text)
+    text = _TAG_RE.sub("", text)
+    text = unescape(text)
+    text = "\n".join(line.strip() for line in text.splitlines())
+    return _BLANK_RUN_RE.sub("\n\n", text).strip()
+
+
+def decode_part_data(data: str) -> str:
+    """Decode Gmail's base64url part payload, tolerating missing padding."""
+    if not data:
+        return ""
+    padded = data + "=" * (-len(data) % 4)
+    return base64.urlsafe_b64decode(padded.encode("ascii")).decode(
+        "utf-8", errors="replace"
+    )
+
+
+def walk_parts(payload: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
+    """Yield every part of a message payload, depth first."""
+    pending = [payload]
+    while pending:
+        part = pending.pop(0)
+        yield part
+        pending = list(part.get("parts", [])) + pending
+
+
+def extract_body(payload: Dict[str, Any]) -> str:
+    """Best plain-text body for a message.
+
+    text/plain wins outright; HTML is flattened only when no plain part exists,
+    which is the usual shape of marketing mail.
+    """
+    plain: List[str] = []
+    html: List[str] = []
+
+    for part in walk_parts(payload):
+        if part.get("filename"):
+            continue  # an attachment, not the message body
+        data = part.get("body", {}).get("data", "")
+        if not data:
+            continue
+        mime = part.get("mimeType", "")
+        if mime == "text/plain":
+            plain.append(decode_part_data(data))
+        elif mime == "text/html":
+            html.append(decode_part_data(data))
+
+    if plain:
+        return "\n".join(plain).strip()
+    if html:
+        return html_to_text("\n".join(html))
+    return ""
+
+
+def extract_attachments(payload: Dict[str, Any]) -> List[AttachmentInfo]:
+    """Names and types of attached files. The files themselves are never read."""
+    found = []
+    for part in walk_parts(payload):
+        filename = part.get("filename")
+        if filename:
+            found.append(
+                AttachmentInfo(
+                    filename=filename,
+                    mime_type=part.get("mimeType") or "application/octet-stream",
+                )
+            )
+    return found
 
 
 def _load_saved_credentials() -> Credentials | None:
@@ -131,6 +251,15 @@ class GmailClient:
             .execute()
         )
         return [item["id"] for item in response.get("messages", [])]
+
+    def get_message(self, message_id: str) -> Dict[str, Any]:
+        """Fetch a whole message, body and all."""
+        return (
+            self.service.users()
+            .messages()
+            .get(userId="me", id=message_id, format="full")
+            .execute()
+        )
 
     def get_headers(self, message_id: str, names: List[str]) -> Dict[str, str]:
         """Fetch only the named headers, leaving the body on the server."""
