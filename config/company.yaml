@@ -1,0 +1,68 @@
+# Business facts for Summit Roofing, injected into the system prompt.
+#
+# The agent answers customer questions from this file and nothing else. If a
+# fact is not here, the draft must not assert it. Editing this file changes the
+# prompt fingerprint, which retires every cached analysis - deliberately, since
+# the answers change with it.
+#
+# Phone numbers are placeholders. Replace them before this is used for real.
+
+name: Summit Roofing
+tagline: Residential and commercial roofing
+
+contact:
+  phone: "(614) 555-0100"
+  emergency_phone: "(614) 555-0199"
+  email: summit.roofing.demo11@gmail.com
+
+services:
+  - Full roof replacement, asphalt shingle and architectural shingle
+  - Roof repairs, including leaks, storm damage, and missing or damaged shingles
+  - Flat and low-slope roofing, including EPDM and TPO
+  - Roof inspections and condition reports
+  - Gutter cleaning, repair, and replacement
+  - Chimney and skylight flashing
+  - Soffit and fascia repair
+  - Emergency temporary weatherproofing, including tarping
+
+not_offered:
+  - Solar panel supply or installation
+  - Interior repairs, plastering, or redecoration after a leak
+  - Tree cutting or removal
+
+service_area:
+  description: Columbus, Ohio and the surrounding communities, within about 30 miles
+  areas:
+    - Columbus
+    - Grandview Heights
+    - Upper Arlington
+    - Bexley
+    - Worthington
+    - Dublin
+    - Hilliard
+    - Westerville
+    - Gahanna
+    - Reynoldsburg
+
+hours:
+  weekdays: Monday to Friday, 7:00 to 17:00
+  saturday: Saturday, 8:00 to 12:00, inspections only
+  sunday: Closed
+  emergency: Emergency call-outs are available 24 hours a day, 7 days a week
+
+response_times:
+  quote: Quotes are sent within 24 hours of a site visit or of receiving full details
+  inspection_report: Inspection reports are sent within 2 working days
+  emergency: Emergency calls are answered 24/7 on the emergency line
+
+warranty:
+  workmanship: Workmanship warranty is provided in writing with every completed job
+  note: >-
+    Warranty length and transferability vary by job and by manufacturer, so
+    never quote a specific number of years. Offer to send the written warranty
+    documentation for the customer's own job instead.
+
+payment:
+  note: >-
+    Never quote a price, a rate, or a deposit amount. Pricing always follows a
+    site visit.

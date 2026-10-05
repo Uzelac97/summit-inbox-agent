@@ -13,6 +13,7 @@ import anthropic
 from dotenv import load_dotenv
 from pydantic import ValidationError
 
+from src.company import render_facts
 from src.models import EmailAnalysis
 
 load_dotenv()
@@ -111,6 +112,40 @@ concise. Thank them, acknowledge their specific situation, ask for exactly the \
 missing details you listed, and state the next step. Never invent prices, \
 dates, appointment times, or warranty terms.
 
+Answering from the business facts below:
+- For a general question, answer it from the facts rather than asking the \
+customer for anything. Ask for a detail only when the answer genuinely depends \
+on it - for example a postcode when the question is whether we cover an \
+address that is not in the listed areas. "Do you work Saturdays?" is answered \
+outright, not met with a question.
+
+What a quote needs:
+- A quote needs three things: the property address, a description of the work, \
+and a photo of the roof. Treat an attached image as the photo.
+- If all three are present, the reply is a short acknowledgement. Thank them, \
+confirm the quote will be sent within 24 hours, and ask nothing further. Do \
+not request extra details such as roof dimensions, materials, or access \
+arrangements, and return an empty missing information list.
+- If any of the three is absent, ask only for the ones that are missing and \
+for nothing else.
+
+Never promise a time:
+- Do not promise a specific date or time, and do not use the words today, \
+tomorrow, tonight, this morning, this afternoon, or this evening at all. Do \
+not name a weekday or a clock time. Say instead that the team will be in touch \
+as soon as possible.
+- That holds even when the customer named the time themselves. Write "the \
+appointment you have booked" rather than "your appointment tomorrow", and \
+"ahead of the forecast rain" rather than "before tonight's rain". Referring to \
+their date reads as confirming it, and nobody has.
+- The standing response times in the facts below are not date promises and \
+should be used: a quote is sent within 24 hours, an inspection report within 2 \
+working days. For a complete quote request, say the quote will be sent within \
+24 hours rather than "as soon as possible".
+- For an emergency, say the team will make contact as soon as possible and \
+point the customer to the 24-hour emergency line, giving the emergency number \
+from the facts below so they can call immediately rather than wait for a reply.
+
 Write the draft reply in the same language the customer wrote in. Reply to a \
 German email in German, to a French email in French, and to an English email \
 in English. These instructions are in English, which does not change that: \
@@ -132,8 +167,11 @@ The Summit Roofing Team
 Use the greeting and sign-off conventions of the language you are writing in, \
 not a word-for-word translation of the English ones - a German reply opens \
 "Guten Tag Herr/Frau <surname>," or "Hallo <first name>," and closes "Mit \
-freundlichen Grüßen". The final line always names the sender: The Summit \
-Roofing Team.
+freundlichen Grüßen".
+
+The final line names the team in the language of the reply. An English reply \
+ends "The Summit Roofing Team". A German reply ends "Ihr Summit Roofing \
+Team" - never the English wording in a German email.
 
 The greeting, each paragraph, and each line of the sign-off are separated by \
 newlines, with a blank line between blocks. Never return the reply as one \
@@ -147,10 +185,16 @@ information list are plain phrases: no leading dash, bullet, or numbering.
 For spam, classify it as spam with low urgency and leave the draft reply empty.
 """
 
+# The business facts are part of the prompt, so a change to config/company.yaml
+# changes the answers. Building the full prompt once here, and fingerprinting
+# that rather than the instructions alone, means editing opening hours retires
+# the cache exactly as editing an instruction does.
+SYSTEM_PROMPT = f"{SYSTEM_INSTRUCTION}\n\n{render_facts()}\n"
+
 # Editing the prompt changes what the model returns, so cached results from an
 # older prompt are stale. Fingerprinting the prompt into the cache key retires
 # those entries automatically instead of leaving them to be cleared by hand.
-PROMPT_FINGERPRINT = hashlib.sha256(SYSTEM_INSTRUCTION.encode("utf-8")).hexdigest()[:8]
+PROMPT_FINGERPRINT = hashlib.sha256(SYSTEM_PROMPT.encode("utf-8")).hexdigest()[:8]
 
 CLASSIFY_TOOL = {
     "name": TOOL_NAME,
@@ -268,7 +312,7 @@ def analyze_email(text: str, use_cache: bool = True) -> EmailAnalysis:
             max_tokens=MAX_TOKENS,
             # No temperature: anthropic 1.x removed the sampling parameters from
             # messages.create entirely. Repeatability comes from the disk cache.
-            system=SYSTEM_INSTRUCTION,
+            system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": f"Analyze this email:\n\n{text}"}],
             tools=[CLASSIFY_TOOL],
             # Forcing the tool is what makes the response structured. Newer

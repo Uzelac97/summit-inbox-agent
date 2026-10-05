@@ -172,7 +172,22 @@
       "expected_customer_name": "Siobhan Hanley",
       "note": "Sent from a household mailbox whose From display name is Robert Hanley, but signed by Siobhan Hanley. The name recorded must be the one in the signature, since that is who wrote the email, and the draft greeting must address that same name. Scheduling with no damage reported makes this medium.",
       "email": "From: Robert Hanley <hanley.household@gmail.com>\nSubject: Booking the annual inspection\n\nHello,\n\nMy husband spoke to one of your surveyors at the home show last month and\nthey suggested we get the annual inspection booked in before winter.\n\nThe roof is in good order as far as we can tell - no leaks, nothing loose\nthat we can see - we would just like it looked over properly. Any weekday\nin the second half of next month would suit us.\n\nCould you let us know what dates you have?\n\nMany thanks,\nSiobhan Hanley\n4 Ravensworth Close\n(614) 555-0613\n"
+    },
+    {
+      "id": "quote_complete",
+      "tricky": "nothing is missing, so the reply must ask nothing",
+      "expected_category": "quote_request",
+      "expected_urgency": "medium",
+      "expected_customer_name": "Gordon Pike",
+      "expect_no_questions": true,
+      "note": "Address, a description of the work, and a photo are all present, so a quote needs nothing further. The draft must be a short acknowledgement confirming the quote within 24 hours, with no questions and an empty missing information list. Asking for roof dimensions or materials here is the failure this case exists to catch. Urgency is medium, not low: cracked and slipping tiles are a damaged but still weatherproof roof, which the rubric puts at medium.",
+      "email": "From: Gordon Pike <g.pike.home@gmail.com>\nSubject: Quote for rear slope re-tile\nAttachments: rear_roof.jpg (image/jpeg)\n\nHello,\n\nI would like a quote for re-tiling the rear slope of our roof. It is a\nsemi-detached house, the rear slope is roughly 40 square metres, and the\nexisting concrete tiles are cracked and slipping in several places. No\nleaks inside yet.\n\nThe property is 18 Calder Crescent, Worthington.\n\nI have attached a photo taken from the garden which shows the slipped\ntiles fairly clearly.\n\nRegards,\nGordon Pike\n(614) 555-0288\n"
     }
   ],
-  "name_rule": "customer.name comes from the signature in the body, falling back to the From display name only when the body carries no signature name. The draft reply's greeting must address the recorded name. Cases carrying expected_customer_name are checked against both."
+  "name_rule": "customer.name comes from the signature in the body, falling back to the From display name only when the body carries no signature name. The draft reply's greeting must address the recorded name. Cases carrying expected_customer_name are checked against both.",
+  "draft_rules": {
+    "no_time_promises": "No draft may promise a specific date or time. Checked on every case against today, tomorrow, tonight, this morning/afternoon/evening, and the German heute and morgen. 'as soon as possible' and the company's 'within 24 hours' response time are allowed.",
+    "no_questions_when_complete": "A case carrying expect_no_questions must produce a draft with no question mark and an empty missing_info list.",
+    "signature": "An English draft signs off 'The Summit Roofing Team', a German draft 'Ihr Summit Roofing Team'."
+  }
 }

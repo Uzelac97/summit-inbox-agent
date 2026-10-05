@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import textwrap
 from dataclasses import dataclass
@@ -27,6 +28,28 @@ sys.path.insert(0, str(ROOT))  # so `src` imports work when run as a script
 from src.classifier import active_model, analyze_email, is_cached  # noqa: E402
 
 CASES_FILE = Path(__file__).resolve().parent / "cases.json"
+
+# Phrases that promise a time. "as soon as possible" and the company's own
+# "within 24 hours" are fine; naming a day or part of a day is not. German is
+# included because German drafts are expected, with "guten Morgen" excluded
+# since that is a greeting rather than a promise.
+TIME_PROMISE_RE = re.compile(
+    r"\b(today|tomorrow|tonight|this (?:morning|afternoon|evening)"
+    r"|heute|morgen Abend)\b",
+    re.IGNORECASE,
+)
+_GUTEN_MORGEN_RE = re.compile(r"guten morgen", re.IGNORECASE)
+
+
+def time_promises(draft: str) -> list[str]:
+    """Phrases in a draft that promise a specific time."""
+    cleaned = _GUTEN_MORGEN_RE.sub("", draft)
+    # Bare "morgen" means tomorrow, but "Morgen" also ends "guten Morgen",
+    # which the line above has already removed.
+    found = set(m.group(0).lower() for m in TIME_PROMISE_RE.finditer(cleaned))
+    for m in re.finditer(r"\bmorgen\b", cleaned, re.IGNORECASE):
+        found.add(m.group(0).lower())
+    return sorted(found)
 WIDTH = 86
 
 
@@ -46,6 +69,9 @@ class Outcome:
     expected_name: str | None = None
     got_name: str | None = None
     greeting: str = ""
+    draft: str = ""
+    missing_count: int = 0
+    expect_no_questions: bool = False
 
     @property
     def ran(self) -> bool:
@@ -62,6 +88,27 @@ class Outcome:
     @property
     def checks_name(self) -> bool:
         return self.expected_name is not None
+
+    @property
+    def time_promises(self) -> list[str]:
+        return time_promises(self.draft) if self.ran else []
+
+    @property
+    def questions_ok(self) -> bool:
+        """For a request with nothing missing, the draft must ask nothing."""
+        if not self.expect_no_questions:
+            return True
+        return "?" not in self.draft and self.missing_count == 0
+
+    @property
+    def signature_ok(self) -> bool:
+        """The sign-off must be in the language the draft is written in."""
+        if not self.ran or not self.draft.strip():
+            return True
+        german = "mit freundlichen gr" in self.draft.lower()
+        if german:
+            return "ihr summit roofing team" in self.draft.lower()
+        return "the summit roofing team" in self.draft.lower()
 
     @property
     def name_ok(self) -> bool:
@@ -97,6 +144,9 @@ def score(outcomes: list[Outcome]) -> dict:
         "name_checked": [o for o in ran if o.checks_name],
         "name_bad": [o for o in ran if o.checks_name
                      and not (o.name_ok and o.greeting_ok)],
+        "time_bad": [o for o in ran if o.time_promises],
+        "questions_bad": [o for o in ran if not o.questions_ok],
+        "signature_bad": [o for o in ran if not o.signature_ok],
     }
 
 
@@ -227,6 +277,9 @@ def main() -> int:
             outcome.greeting = next(
                 (l for l in analysis.draft_reply.splitlines() if l.strip()), ""
             )
+            outcome.draft = analysis.draft_reply
+            outcome.missing_count = len(analysis.missing_info)
+            outcome.expect_no_questions = bool(case.get("expect_no_questions"))
         except Exception as exc:
             outcome.error = f"{type(exc).__name__}: {exc}"
 
@@ -266,6 +319,31 @@ def main() -> int:
                 print(f"  {o.case_id:<28} {str(o.expected_name):<18} "
                       f"{str(o.got_name):<18} {greet}")
             print()
+
+    print("DRAFT RULES")
+    ran = [o for o in outcomes if o.ran]
+    for title, bad, detail in (
+        ("no time promises", summary["time_bad"],
+         lambda o: ", ".join(o.time_promises)),
+        ("no questions when nothing is missing",
+         summary["questions_bad"],
+         lambda o: f"{o.missing_count} missing, "
+                   f"{'has' if '?' in o.draft else 'no'} question mark"),
+        ("sign-off matches the draft language", summary["signature_bad"],
+         lambda o: (o.draft.strip().splitlines() or [""])[-1][:40]),
+    ):
+        checked = (
+            len([o for o in ran if o.expect_no_questions])
+            if "no questions" in title
+            else len(ran)
+        )
+        if not bad:
+            print(f"  {title:<38} {checked - len(bad)}/{checked} OK")
+        else:
+            print(f"  {title:<38} {checked - len(bad)}/{checked} - FAILURES:")
+            for o in bad:
+                print(f"      {o.case_id:<28} {detail(o)}")
+    print()
 
     scored = summary["ran"]
     print("ACCURACY")
