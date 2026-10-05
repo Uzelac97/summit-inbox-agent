@@ -1,18 +1,35 @@
-# Business facts for Summit Roofing, injected into the system prompt.
+# Business facts for the inbox agent.
 #
-# The agent answers customer questions from this file and nothing else. If a
-# fact is not here, the draft must not assert it. Editing this file changes the
-# prompt fingerprint, which retires every cached analysis - deliberately, since
-# the answers change with it.
+# This is the ONLY file a new business edits. Nothing company-specific lives in
+# the prompt, the code, or the eval set. The agent answers customer questions
+# from this file and nothing else: if a fact is not here, the draft must not
+# assert it.
 #
-# Phone numbers are placeholders. Replace them before this is used for real.
+# Editing this file changes the prompt fingerprint, which retires every cached
+# analysis - deliberately, since the answers change with it.
+#
+# Phone numbers below are placeholders. Replace them before real use.
 
 name: Summit Roofing
 tagline: Residential and commercial roofing
 
+# The company's own language, as an ISO code. Used when reply_language is
+# "company", and as the fallback when a customer's language cannot be told.
+language: en
+
+# How the draft reply picks its language:
+#   match_customer - reply in whatever language the customer wrote in (default)
+#   company        - always reply in the language set above
+#   a code such as "de" - always reply in that language
+reply_language: match_customer
+
+# Used only if the business ever quotes figures. The agent never states prices,
+# so this exists for completeness and for any later feature that needs it.
+currency: EUR
+
 contact:
-  phone: "(614) 555-0100"
-  emergency_phone: "(614) 555-0199"
+  phone: "+1 555 0199"
+  emergency_phone: "+1 555 0199"
   email: summit.roofing.demo11@gmail.com
 
 services:
@@ -30,19 +47,16 @@ not_offered:
   - Interior repairs, plastering, or redecoration after a leak
   - Tree cutting or removal
 
-service_area:
-  description: Columbus, Ohio and the surrounding communities, within about 30 miles
-  areas:
-    - Columbus
-    - Grandview Heights
-    - Upper Arlington
-    - Bexley
-    - Worthington
-    - Dublin
-    - Hilliard
-    - Westerville
-    - Gahanna
-    - Reynoldsburg
+# Leave this empty to serve customers anywhere. When empty the agent never
+# declines work on location grounds and never mentions geography at all.
+# To restrict coverage, give a description and optionally a list of areas:
+#
+# service_area:
+#   description: Greater Manchester and within about 30 miles
+#   areas:
+#     - Manchester
+#     - Salford
+service_area: {}
 
 hours:
   weekdays: Monday to Friday, 7:00 to 17:00

@@ -14,7 +14,7 @@
       "expected_category": "quote_request",
       "expected_urgency": "low",
       "note": "Baseline quote request with no time pressure.",
-      "email": "From: m.delgado44@gmail.com\nSubject: Roof replacement quote\n\nHello,\n\nOur roof is about 22 years old and we are starting to think about replacing\nit. Nothing is wrong with it right now, we just want to budget for it over\nthe next year or two.\n\nCould you send us a quote for a full replacement? The house is a two-storey\ncolonial, roughly 2,200 square feet.\n\nThanks,\nMarco Delgado\n41 Hartley Road\n(614) 555-0144\n",
+      "email": "From: m.delgado44@gmail.com\nSubject: Roof replacement quote\n\nHello,\n\nOur roof is about 22 years old and we are starting to think about replacing\nit. Nothing is wrong with it right now, we just want to budget for it over\nthe next year or two.\n\nCould you send us a quote for a full replacement? The house is a two-storey\ncolonial, roughly 2,200 square feet.\n\nThanks,\nMarco Delgado\n41 Hartley Road\n555 0144\n",
       "expected_customer_name": "Marco Delgado"
     },
     {
@@ -23,7 +23,7 @@
       "expected_category": "quote_request",
       "expected_urgency": "medium",
       "note": "Quote request with a hard external deadline, which lifts it above a routine quote.",
-      "email": "From: tfoster.claims@gmail.com\nSubject: Need written estimate for insurance by Friday\n\nHi,\n\nMy insurance adjuster came out after the hail in March and approved a\npartial roof replacement. They need a written contractor estimate submitted\nby this Friday or the claim closes and I have to start the process over.\n\nThe roof itself is holding up fine, this is purely a paperwork deadline.\nCan you get me an estimate in writing before then?\n\nTara Foster\n77 Linden Court\n(614) 555-0292\n"
+      "email": "From: tfoster.claims@gmail.com\nSubject: Need written estimate for insurance by Friday\n\nHi,\n\nMy insurance adjuster came out after the hail in March and approved a\npartial roof replacement. They need a written contractor estimate submitted\nby this Friday or the claim closes and I have to start the process over.\n\nThe roof itself is holding up fine, this is purely a paperwork deadline.\nCan you get me an estimate in writing before then?\n\nTara Foster\n77 Linden Court\n555 0292\n"
     },
     {
       "id": "appointment_reschedule",
@@ -31,7 +31,7 @@
       "expected_category": "appointment",
       "expected_urgency": "medium",
       "note": "Straightforward scheduling change.",
-      "email": "From: gwen.harper@gmail.com\nSubject: Move my Tuesday inspection?\n\nGood afternoon,\n\nI have a roof inspection booked for next Tuesday at 2pm but I have to be\nout of town that day. Could we move it to the Thursday or Friday instead?\nAfternoons work best for me.\n\nGwen Harper\n213 Melbourne Street\n(614) 555-0311\n"
+      "email": "From: gwen.harper@gmail.com\nSubject: Move my Tuesday inspection?\n\nGood afternoon,\n\nI have a roof inspection booked for next Tuesday at 2pm but I have to be\nout of town that day. Could we move it to the Thursday or Friday instead?\nAfternoons work best for me.\n\nGwen Harper\n213 Melbourne Street\n555 0311\n"
     },
     {
       "id": "appointment_tomorrow",
@@ -39,7 +39,7 @@
       "expected_category": "appointment",
       "expected_urgency": "medium",
       "note": "Confirmation for a next-day visit: time-sensitive, but nothing is damaged.",
-      "email": "From: oscar.benitez@gmail.com\nSubject: are you still coming tomorrow\n\nHi, just checking that your crew is still coming tomorrow morning for the\ngutter work. Nobody confirmed and I took the day off work for it. What time\nshould I expect you?\n\nOscar Benitez\n(614) 555-0407\n"
+      "email": "From: oscar.benitez@gmail.com\nSubject: are you still coming tomorrow\n\nHi, just checking that your crew is still coming tomorrow morning for the\ngutter work. Nobody confirmed and I took the day off work for it. What time\nshould I expect you?\n\nOscar Benitez\n555 0407\n"
     },
     {
       "id": "leak_no_prior_work",
@@ -47,7 +47,7 @@
       "expected_category": "emergency",
       "expected_urgency": "high",
       "note": "Active leak from a first-time sender. The emergency category exists precisely for this: it applies regardless of whether the sender has ever been a customer. This case previously documented a taxonomy gap, which the emergency category closes.",
-      "email": "From: priya.nair.home@gmail.com\nSubject: Roof leaking into bedroom, can anyone come out\n\nHello,\n\nI have never used your company before but you came up first for emergency\nroof repair. Water started coming through our bedroom ceiling about an hour\nago and it is getting worse. There is a wet patch maybe two feet across and\nit is dripping onto the bed.\n\nI have no idea what caused it, the weather has been fine. Is there any\nchance someone can come out today? I will pay whatever the emergency rate\nis.\n\nPriya Nair\n19 Collingwood Avenue\n(614) 555-0588\n"
+      "email": "From: priya.nair.home@gmail.com\nSubject: Roof leaking into bedroom, can anyone come out\n\nHello,\n\nI have never used your company before but you came up first for emergency\nroof repair. Water started coming through our bedroom ceiling about an hour\nago and it is getting worse. There is a wet patch maybe two feet across and\nit is dripping onto the bed.\n\nI have no idea what caused it, the weather has been fine. Is there any\nchance someone can come out today? I will pay whatever the emergency rate\nis.\n\nPriya Nair\n19 Collingwood Avenue\n555 0588\n"
     },
     {
       "id": "angry_nails",
@@ -80,7 +80,7 @@
       "expected_category": "appointment",
       "expected_urgency": "medium",
       "note": "Two distinct asks. Rescheduling is the primary request and the one with a deadline; the garage quote is secondary. quote_request is a defensible answer. What matters most is that missing_info and the draft reply address both asks rather than silently dropping one.",
-      "email": "From: n.achterberg@gmail.com\nSubject: Thursday + one more thing\n\nHi,\n\nTwo things. First, we cannot make the appointment on Thursday afternoon\nafter all, my husband's surgery got moved to that morning. Could we do the\nfollowing Monday or Tuesday instead?\n\nSecond, while your man is here, could he also price up re-roofing the\ndetached garage? It is about 20 by 24 feet, currently corrugated metal, and\nit leaks in two corners. We would want that as a separate quote so we can\ndecide on it on its own.\n\nNina Achterberg\n88 Rosslyn Way\n(614) 555-0761\n"
+      "email": "From: n.achterberg@gmail.com\nSubject: Thursday + one more thing\n\nHi,\n\nTwo things. First, we cannot make the appointment on Thursday afternoon\nafter all, my husband's surgery got moved to that morning. Could we do the\nfollowing Monday or Tuesday instead?\n\nSecond, while your man is here, could he also price up re-roofing the\ndetached garage? It is about 20 by 24 feet, currently corrugated metal, and\nit leaks in two corners. We would want that as a separate quote so we can\ndecide on it on its own.\n\nNina Achterberg\n88 Rosslyn Way\n555 0761\n"
     },
     {
       "id": "vague",
@@ -96,7 +96,7 @@
       "expected_category": "quote_request",
       "expected_urgency": "high",
       "note": "German email reporting damp ceiling patches but no active dripping, plus a two-week scheduling wish. Any water ingress counts as high, because a missed leak costs far more than one unnecessary fast response. The category stays quote_request: slow damage is classified by what the sender is asking for, and only actively running water is the emergency category. Also tests extraction from, and a reply in, a non-English email.",
-      "email": "From: s.brandt@webmail.de\nSubject: Angebot fuer neues Dach\n\nGuten Tag,\n\nwir haben ein Reihenhaus in Grandview Heights, das Dach ist etwa 30 Jahre\nalt. Bei starkem Regen sehen wir inzwischen feuchte Stellen an der Decke im\nObergeschoss, es tropft aber noch nicht.\n\nKoennten Sie uns ein Angebot fuer eine komplette Neueindeckung machen? Ein\nTermin in den naechsten zwei Wochen waere uns sehr willkommen.\n\nMit freundlichen Gruessen\nStefan Brandt\nAhornweg 14\nTelefon: 0170 5551234\n",
+      "email": "From: s.brandt@webmail.de\nSubject: Angebot fuer neues Dach\n\nGuten Tag,\n\nwir haben ein Reihenhaus, das Dach ist etwa 30 Jahre\nalt. Bei starkem Regen sehen wir inzwischen feuchte Stellen an der Decke im\nObergeschoss, es tropft aber noch nicht.\n\nKoennten Sie uns ein Angebot fuer eine komplette Neueindeckung machen? Ein\nTermin in den naechsten zwei Wochen waere uns sehr willkommen.\n\nMit freundlichen Gruessen\nStefan Brandt\nAhornweg 14\nTelefon: 555 0134\n",
       "expected_customer_name": "Stefan Brandt"
     },
     {
@@ -113,7 +113,7 @@
       "expected_category": "spam",
       "expected_urgency": "low",
       "note": "Unambiguous marketing blast.",
-      "email": "From: no-reply@summitgrowthpartners.info\nSubject: 2 spots left for roofers in your county\n\nATTENTION ROOFING BUSINESS OWNER\n\nWe are opening 2 final spots in Franklin County for our Roofer Domination\nProgram. Our clients average 38 new installs per month within 60 days.\n\n- Done-for-you Google Ads\n- AI appointment setter\n- Proprietary lead scoring\n\nClick through to claim your spot before your competitor does.\n\nTo stop receiving these messages reply STOP.\n"
+      "email": "From: no-reply@summitgrowthpartners.info\nSubject: 2 spots left for roofers in your county\n\nATTENTION ROOFING BUSINESS OWNER\n\nWe are opening 2 final spots in your county for our Roofer Domination\nProgram. Our clients average 38 new installs per month within 60 days.\n\n- Done-for-you Google Ads\n- AI appointment setter\n- Proprietary lead scoring\n\nClick through to claim your spot before your competitor does.\n\nTo stop receiving these messages reply STOP.\n"
     },
     {
       "id": "warranty_question",
@@ -121,7 +121,7 @@
       "expected_category": "general",
       "expected_urgency": "low",
       "note": "Information request with no work attached and an explicit lack of urgency.",
-      "email": "From: lucy.framingham@gmail.com\nSubject: warranty paperwork question\n\nHi,\n\nYou replaced our roof in 2023 and we are refinancing. The lender is asking\nfor documentation of the workmanship warranty. Could you send a copy of\nwhatever you have on file for us?\n\nNo urgency, the lender gave us three weeks.\n\nLucy Framingham\n14 Westgate Close\n(614) 555-0822\n"
+      "email": "From: lucy.framingham@gmail.com\nSubject: warranty paperwork question\n\nHi,\n\nYou replaced our roof in 2023 and we are refinancing. The lender is asking\nfor documentation of the workmanship warranty. Could you send a copy of\nwhatever you have on file for us?\n\nNo urgency, the lender gave us three weeks.\n\nLucy Framingham\n14 Westgate Close\n555 0822\n"
     },
     {
       "id": "storm_existing_customer",
@@ -129,7 +129,7 @@
       "expected_category": "emergency",
       "expected_urgency": "high",
       "note": "Storm damage with exposed decking and heavy rain forecast. Nothing is inside yet, but the structure is open, so this is an emergency rather than the complaint it reads as on the surface.",
-      "email": "From: rcastellano.oh@gmail.com\nSubject: shingles came off in last night's wind - you did this roof in May\n\nMorning,\n\nThe wind last night took a strip of shingles off the back slope of our\nroof, the one your team installed in May. I can see the bare wood\nunderneath from the garden, it is maybe a metre and a half across.\n\nNothing is coming inside yet but there is heavy rain forecast for tonight\nand I am worried about what happens if that goes on uncovered. The roof is\nfive months old so I assume this is covered.\n\nCan someone get a tarp over it today at least?\n\nRafael Castellano\n52 Ashbourne Lane\n(614) 555-0935\n"
+      "email": "From: rcastellano.oh@gmail.com\nSubject: shingles came off in last night's wind - you did this roof in May\n\nMorning,\n\nThe wind last night took a strip of shingles off the back slope of our\nroof, the one your team installed in May. I can see the bare wood\nunderneath from the garden, it is maybe a metre and a half across.\n\nNothing is coming inside yet but there is heavy rain forecast for tonight\nand I am worried about what happens if that goes on uncovered. The roof is\nfive months old so I assume this is covered.\n\nCan someone get a tarp over it today at least?\n\nRafael Castellano\n52 Ashbourne Lane\n555 0935\n"
     },
     {
       "id": "complaint_invoice_overrun",
@@ -137,7 +137,7 @@
       "expected_category": "complaint",
       "expected_urgency": "medium",
       "note": "Unhappy about billing, not about the roof. The work is finished and sound, nothing is leaking or unsafe, but we owe them an answer about a figure they did not agree to.",
-      "email": "From: a.whitcombe@btinternet.com\nSubject: Invoice is 1,800 more than the quote\n\nHello,\n\nThe re-roof finished last Thursday and I have no complaints about the\nwork itself - the lads were tidy and the roof looks great.\n\nWhat I do have a problem with is the invoice. I was quoted 11,400 and\nthe bill that arrived yesterday is 13,200. Nobody rang me, nobody asked\nme to approve anything extra, and there is no breakdown on the invoice\nexplaining the difference.\n\nI am not refusing to pay but I am not paying an extra 1,800 until\nsomebody explains it to me in writing. Can you send an itemised\nbreakdown of what changed and why?\n\nAlan Whitcombe\n9 Beckford Terrace\n(614) 555-0470\n"
+      "email": "From: a.whitcombe@btinternet.com\nSubject: Invoice is 1,800 more than the quote\n\nHello,\n\nThe re-roof finished last Thursday and I have no complaints about the\nwork itself - the lads were tidy and the roof looks great.\n\nWhat I do have a problem with is the invoice. I was quoted 11,400 and\nthe bill that arrived yesterday is 13,200. Nobody rang me, nobody asked\nme to approve anything extra, and there is no breakdown on the invoice\nexplaining the difference.\n\nI am not refusing to pay but I am not paying an extra 1,800 until\nsomebody explains it to me in writing. Can you send an itemised\nbreakdown of what changed and why?\n\nAlan Whitcombe\n9 Beckford Terrace\n555 0470\n"
     },
     {
       "id": "complaint_german_mess",
@@ -145,7 +145,7 @@
       "expected_category": "complaint",
       "expected_urgency": "medium",
       "note": "German complaint about site tidiness and a damaged flowerbed. The roof itself is explicitly fine, so this is a complaint at medium, not an emergency. Tests that a non-English complaint is not mistaken for an emergency or a quote request.",
-      "email": "From: brigitte.lenz@gmx.de\nSubject: Beschwerde über die Baustelle\n\nGuten Tag,\n\nIhre Mitarbeiter haben letzte Woche unser Dach fertiggestellt. Mit dem\nDach selbst sind wir zufrieden, es ist alles dicht und sauber gearbeitet.\n\nAllerdings wurde der Garten in einem schlimmen Zustand hinterlassen.\nÜberall liegen Schindelreste und alte Nägel, das Blumenbeet an der\nSüdseite ist komplett zertrampelt und am Zaun haben wir Zigarettenstummel\ngefunden. Mein Mann hat gestern zwei Stunden damit verbracht, Nägel\naufzusammeln, weil wir einen Hund haben.\n\nWir erwarten, dass jemand vorbeikommt und das ordentlich aufräumt. Für\ndas zertrampelte Beet hätten wir gern einen Vorschlag zur Wiedergutmachung.\n\nMit freundlichen Grüßen\nBrigitte Lenz\nLindenstraße 8\nTelefon: 0151 5559842\n",
+      "email": "From: brigitte.lenz@gmx.de\nSubject: Beschwerde über die Baustelle\n\nGuten Tag,\n\nIhre Mitarbeiter haben letzte Woche unser Dach fertiggestellt. Mit dem\nDach selbst sind wir zufrieden, es ist alles dicht und sauber gearbeitet.\n\nAllerdings wurde der Garten in einem schlimmen Zustand hinterlassen.\nÜberall liegen Schindelreste und alte Nägel, das Blumenbeet an der\nSüdseite ist komplett zertrampelt und am Zaun haben wir Zigarettenstummel\ngefunden. Mein Mann hat gestern zwei Stunden damit verbracht, Nägel\naufzusammeln, weil wir einen Hund haben.\n\nWir erwarten, dass jemand vorbeikommt und das ordentlich aufräumt. Für\ndas zertrampelte Beet hätten wir gern einen Vorschlag zur Wiedergutmachung.\n\nMit freundlichen Grüßen\nBrigitte Lenz\nLindenstraße 8\nTelefon: 555 0142\n",
       "expected_customer_name": "Brigitte Lenz"
     },
     {
@@ -154,7 +154,7 @@
       "expected_category": "general",
       "expected_urgency": "low",
       "note": "Third-party enquiry asking us to confirm completed work for a property sale. No pricing, no visit to book, and the sender gives a generous deadline, so it is general at low urgency.",
-      "email": "From: j.pemberton@halloway-residential.com\nSubject: Confirmation of roof works - 22 Alderney Drive\n\nGood morning,\n\nI am handling the sale of 22 Alderney Drive on behalf of the vendor, and\nthe buyer's solicitor has asked for confirmation of the roof works your\ncompany carried out there.\n\nWould you be able to confirm in writing what was done, the date it was\ncompleted, and whether any guarantee remains in force? The vendor has\ngiven permission for you to share this with us.\n\nThere is no great rush - exchange is not expected for another month.\n\nKind regards,\nJames Pemberton\nHalloway Residential\n(614) 555-0255\n"
+      "email": "From: j.pemberton@halloway-residential.com\nSubject: Confirmation of roof works - 22 Alderney Drive\n\nGood morning,\n\nI am handling the sale of 22 Alderney Drive on behalf of the vendor, and\nthe buyer's solicitor has asked for confirmation of the roof works your\ncompany carried out at that property.\n\nWould you be able to confirm in writing what was done, the date it was\ncompleted, and whether any guarantee remains in force? The vendor has\ngiven permission for you to share this with us.\n\nThere is no great rush - exchange is not expected for another month.\n\nKind regards,\nJames Pemberton\nHalloway Residential\n555 0255\n"
     },
     {
       "id": "spam_fake_invoice",
@@ -171,7 +171,7 @@
       "expected_urgency": "medium",
       "expected_customer_name": "Siobhan Hanley",
       "note": "Sent from a household mailbox whose From display name is Robert Hanley, but signed by Siobhan Hanley. The name recorded must be the one in the signature, since that is who wrote the email, and the draft greeting must address that same name. Scheduling with no damage reported makes this medium.",
-      "email": "From: Robert Hanley <hanley.household@gmail.com>\nSubject: Booking the annual inspection\n\nHello,\n\nMy husband spoke to one of your surveyors at the home show last month and\nthey suggested we get the annual inspection booked in before winter.\n\nThe roof is in good order as far as we can tell - no leaks, nothing loose\nthat we can see - we would just like it looked over properly. Any weekday\nin the second half of next month would suit us.\n\nCould you let us know what dates you have?\n\nMany thanks,\nSiobhan Hanley\n4 Ravensworth Close\n(614) 555-0613\n"
+      "email": "From: Robert Hanley <hanley.household@gmail.com>\nSubject: Booking the annual inspection\n\nHello,\n\nMy husband spoke to one of your surveyors at the home show last month and\nthey suggested we get the annual inspection booked in before winter.\n\nThe roof is in good order as far as we can tell - no leaks, nothing loose\nthat we can see - we would just like it looked over properly. Any weekday\nin the second half of next month would suit us.\n\nCould you let us know what dates you have?\n\nMany thanks,\nSiobhan Hanley\n4 Ravensworth Close\n555 0613\n"
     },
     {
       "id": "quote_complete",
@@ -181,7 +181,7 @@
       "expected_customer_name": "Gordon Pike",
       "expect_no_questions": true,
       "note": "Address, a description of the work, and a photo are all present, so a quote needs nothing further. The draft must be a short acknowledgement confirming the quote within 24 hours, with no questions and an empty missing information list. Asking for roof dimensions or materials here is the failure this case exists to catch. Urgency is medium, not low: cracked and slipping tiles are a damaged but still weatherproof roof, which the rubric puts at medium.",
-      "email": "From: Gordon Pike <g.pike.home@gmail.com>\nSubject: Quote for rear slope re-tile\nAttachments: rear_roof.jpg (image/jpeg)\n\nHello,\n\nI would like a quote for re-tiling the rear slope of our roof. It is a\nsemi-detached house, the rear slope is roughly 40 square metres, and the\nexisting concrete tiles are cracked and slipping in several places. No\nleaks inside yet.\n\nThe property is 18 Calder Crescent, Worthington.\n\nI have attached a photo taken from the garden which shows the slipped\ntiles fairly clearly.\n\nRegards,\nGordon Pike\n(614) 555-0288\n"
+      "email": "From: Gordon Pike <g.pike.home@gmail.com>\nSubject: Quote for rear slope re-tile\nAttachments: rear_roof.jpg (image/jpeg)\n\nHello,\n\nI would like a quote for re-tiling the rear slope of our roof. It is a\nsemi-detached house, the rear slope is roughly 40 square metres, and the\nexisting concrete tiles are cracked and slipping in several places. No\nleaks inside yet.\n\nThe property is 18 Calder Crescent.\n\nI have attached a photo taken from the garden which shows the slipped\ntiles fairly clearly.\n\nRegards,\nGordon Pike\n555 0288\n"
     }
   ],
   "name_rule": "customer.name comes from the signature in the body, falling back to the From display name only when the body carries no signature name. The draft reply's greeting must address the recorded name. Cases carrying expected_customer_name are checked against both.",
