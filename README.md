@@ -21,6 +21,8 @@ flowchart TD
     G --> A[Inbox agent: classify, label, draft]
     A --> D[Draft reply saved]
     A --> E[Emergency: starred and important]
+    E --> EM[Draft with emergency line saved]
+    EM --> CB[Owner calls back]
     A --> Q[Complete quote request]
     D --> O[Owner reviews and sends]
     Q --> N[Quote generator n8n]
