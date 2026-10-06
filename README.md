@@ -45,6 +45,8 @@ coverage, hours, language — comes from the config file.
 ## Running it
 
 ```bash
+python run_agent.py            # one pass over unhandled Gmail, up to 25 emails
+python run_agent.py --loop     # repeat every POLL_INTERVAL_MINUTES (from .env) until Ctrl+C
 python demo_run.py            # triage the bundled sample emails
 python evals/run_eval.py      # score the agent against evals/cases.json
 streamlit run app.py          # review drafts in the dashboard

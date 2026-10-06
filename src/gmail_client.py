@@ -28,6 +28,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from src.labels import SYSTEM_LABELS
 from src.models import AttachmentInfo
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -360,7 +361,10 @@ class GmailClient:
         """Add labels to a message."""
         if not names:
             return
-        ids = [self.ensure_label(name) for name in names]
+        ids = [
+            name if name in SYSTEM_LABELS else self.ensure_label(name)
+            for name in names
+        ]
         self.service.users().messages().modify(
             userId="me", id=message_id, body={"addLabelIds": ids}
         ).execute()

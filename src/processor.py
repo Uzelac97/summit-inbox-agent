@@ -11,8 +11,9 @@ from dataclasses import dataclass
 
 from src.classifier import analyze_email
 from src.gmail_client import build_reply_mime
-from src.labels import ALL_LABELS, PROCESSED_LABEL, label_for
-from src.models import EmailAnalysis, InboundEmail
+from src.labels import ALL_LABELS, EMERGENCY_MARKS, PROCESSED_LABEL, label_for
+from src.models import Category, EmailAnalysis, InboundEmail
+from src.notify import NoOpNotifier, Notifier
 
 log = logging.getLogger(__name__)
 
@@ -36,9 +37,12 @@ class Result:
 class Processor:
     """Runs the pipeline over emails, one at a time, never stopping on one."""
 
-    def __init__(self, client, dry_run: bool = False) -> None:
+    def __init__(
+        self, client, dry_run: bool = False, notifier: Notifier | None = None
+    ) -> None:
         self.client = client
         self.dry_run = dry_run
+        self.notifier = notifier or NoOpNotifier()
 
     def prepare(self) -> None:
         """Create the agent's labels up front.
@@ -52,6 +56,13 @@ class Processor:
             return
         self.client.ensure_labels(ALL_LABELS)
 
+    def _notify(self, result: Result) -> None:
+        """Tell a person about an emergency. A failure here never fails the email."""
+        try:
+            self.notifier.emergency(result)
+        except Exception:
+            log.exception("notify failed: %s", result.email.source_id)
+
     def process(self, email: InboundEmail) -> Result:
         """Analyze one email, label it, and draft a reply.
 
@@ -64,6 +75,13 @@ class Processor:
         try:
             result.analysis = analyze_email(email.prompt_text)
             category_label = label_for(result.analysis.category)
+            # Starred on the same write as the category label, so an emergency
+            # is flagged even if a later step in this email fails.
+            marks = (
+                EMERGENCY_MARKS
+                if result.analysis.category is Category.EMERGENCY
+                else ()
+            )
             draft_body = result.analysis.draft_reply.strip()
 
             if not draft_body:
@@ -82,10 +100,10 @@ class Processor:
                     result.draft_skipped or "draft a reply",
                     PROCESSED_LABEL,
                 )
-                result.labels_applied = (category_label, PROCESSED_LABEL)
+                result.labels_applied = (category_label, *marks, PROCESSED_LABEL)
                 return result
 
-            self.client.add_labels(email.source_id, [category_label])
+            self.client.add_labels(email.source_id, [category_label, *marks])
 
             if not result.draft_skipped:
                 result.draft_id = self.client.create_draft(
@@ -101,7 +119,10 @@ class Processor:
 
             # Only now is the email genuinely handled.
             self.client.add_labels(email.source_id, [PROCESSED_LABEL])
-            result.labels_applied = (category_label, PROCESSED_LABEL)
+            result.labels_applied = (category_label, *marks, PROCESSED_LABEL)
+
+            if marks:
+                self._notify(result)
 
         except Exception as exc:
             # One unprocessable email must not end the run. Without

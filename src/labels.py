@@ -29,6 +29,17 @@ PROCESSED_LABEL = "agent/processed"
 
 ALL_LABELS = sorted(set(CATEGORY_LABELS.values()) | {PROCESSED_LABEL})
 
+# Gmail's own flags rather than agent labels. An emergency is starred and
+# marked important so it stands out in any view of the inbox, not only one
+# the agent's labels are filtered into. These are system labels: Gmail has
+# them already, so they are never created or coloured.
+EMERGENCY_MARKS = ("STARRED", "IMPORTANT")
+SYSTEM_LABELS = frozenset(EMERGENCY_MARKS)
+
+# The mail the agent has not handled yet. Used as the query for a run, so an
+# email already processed is not analysed or drafted for a second time.
+UNPROCESSED_QUERY = f'in:inbox -label:"{PROCESSED_LABEL}"'
+
 # Gmail accepts only a fixed palette for label colours; an arbitrary hex is
 # rejected with a 400. Every value below was checked against the live API.
 # Both backgroundColor and textColor are required - sending one alone fails.
