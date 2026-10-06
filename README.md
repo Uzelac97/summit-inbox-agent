@@ -16,14 +16,16 @@ The two are connected by a webhook. When a customer's email is a complete quote 
 ## How it works
 
 ```mermaid
-flowchart LR
+flowchart TD
     C[Customer email] --> G[Gmail inbox]
-    G --> A["Inbox agent<br/>classify, label, draft"]
-    A -->|reply saved as a Gmail draft| O[Owner reviews]
-    A -->|complete quote request<br/>job, address, photo| N["Quote generator (n8n)<br/>builds the quote"]
-    A -->|emergency| S[Starred and marked important]
-    N -->|quote sent to owner for approval| O
-    O -->|owner sends| C
+    G --> A[Inbox agent: classify, label, draft]
+    A --> D[Draft reply saved]
+    A --> E[Emergency: starred and important]
+    A --> Q[Complete quote request]
+    D --> O[Owner reviews and sends]
+    Q --> N[Quote generator n8n]
+    N --> P[Owner approves]
+    P --> F[Customer]
 ```
 
 The agent runs in the background, or once when you start it. Each pass reads mail that has not been handled yet, and for each email it:
