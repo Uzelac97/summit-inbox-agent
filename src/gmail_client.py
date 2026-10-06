@@ -36,8 +36,9 @@ CREDENTIALS_FILE = ROOT / "credentials.json"
 TOKEN_FILE = ROOT / "token.json"
 
 # gmail.modify covers reading and labelling; gmail.compose covers creating
-# drafts. gmail.send is deliberately absent, so the OAuth grant itself makes it
-# impossible for this agent to send mail as the mailbox owner. Changing this
+# drafts. gmail.send is not requested, and no code path calls a send method.
+# gmail.compose is broader than drafts - Google's scope also permits sending -
+# so "never sends" rests on the code, not on the grant alone. Changing this
 # list invalidates token.json and forces a fresh consent.
 SCOPES = [
     "https://www.googleapis.com/auth/gmail.modify",
@@ -267,8 +268,8 @@ def get_credentials() -> Credentials:
 class GmailClient:
     """Thin wrapper over the Gmail API.
 
-    Reading, and applying labels. Draft creation arrives with the step that
-    needs it. Sending is impossible: the scopes above do not permit it.
+    Reading, labelling, and creating drafts. Nothing here sends mail: there is
+    no send call, and gmail.send is not in SCOPES (see the note there).
     """
 
     def __init__(self, service: Any | None = None) -> None:

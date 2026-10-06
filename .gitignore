@@ -6,4 +6,5 @@ data/
 .streamlit/secrets.toml
 .venv/
 credentials.json
+client_secret*.json
 token.json
