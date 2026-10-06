@@ -180,6 +180,7 @@
       "expected_urgency": "medium",
       "expected_customer_name": "Gordon Pike",
       "expect_no_questions": true,
+      "expect_template": true,
       "note": "Address, a description of the work, and a photo are all present, so a quote needs nothing further. The draft must be a short acknowledgement confirming the quote within 24 hours, with no questions and an empty missing information list. Asking for roof dimensions or materials here is the failure this case exists to catch. Urgency is medium, not low: cracked and slipping tiles are a damaged but still weatherproof roof, which the rubric puts at medium.",
       "email": "From: Gordon Pike <g.pike.home@gmail.com>\nSubject: Quote for rear slope re-tile\nAttachments: rear_roof.jpg (image/jpeg)\n\nHello,\n\nI would like a quote for re-tiling the rear slope of our roof. It is a\nsemi-detached house, the rear slope is roughly 40 square metres, and the\nexisting concrete tiles are cracked and slipping in several places. No\nleaks inside yet.\n\nThe property is 18 Calder Crescent.\n\nI have attached a photo taken from the garden which shows the slipped\ntiles fairly clearly.\n\nRegards,\nGordon Pike\n555 0288\n"
     }

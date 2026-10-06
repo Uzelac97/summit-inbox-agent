@@ -133,6 +133,13 @@ class EmailAnalysis(BaseModel):
     missing_info: List[str] = Field(
         description="Details we still need from the customer before we can act."
     )
+    job_described: bool = Field(
+        default=False,
+        description=(
+            "True only if the email says what work is needed, in the customer's "
+            "own words. An address or a photo alone does not count."
+        ),
+    )
     draft_reply: str = Field(description="Ready-to-send reply, signed as Summit Roofing.")
 
     @field_validator("missing_info")

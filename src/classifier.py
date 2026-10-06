@@ -15,6 +15,7 @@ from pydantic import ValidationError
 
 from src.company import load_company, render_facts
 from src.models import EmailAnalysis
+from src.quote_rules import apply_quote_rules
 
 load_dotenv()
 
@@ -128,6 +129,8 @@ outright, not met with a question.
 What a quote needs:
 - A quote needs three things: the property address, a description of the work, \
 and a photo of the roof. Treat an attached image as the photo.
+- Set job_described to true only if the email says what work is needed, in the \
+customer's own words. An address or a photo on its own does not count.
 - If all three are present, the reply is a short acknowledgement. Thank them, \
 confirm the quote will be sent within 24 hours, and ask nothing further. Do \
 not request extra details such as roof dimensions, materials, or access \
@@ -309,7 +312,9 @@ def analyze_email(text: str, use_cache: bool = True) -> EmailAnalysis:
     if use_cache:
         cached = _read_cache(cache_file)
         if cached is not None:
-            return cached
+            # The rule runs on cached results too: the cache holds the model's
+            # output, and the quote acknowledgement is decided here, not by it.
+            return apply_quote_rules(text, cached)
 
     try:
         response = _get_client().messages.create(
@@ -336,4 +341,4 @@ def analyze_email(text: str, use_cache: bool = True) -> EmailAnalysis:
 
     if use_cache:
         _write_cache(cache_file, result)
-    return result
+    return apply_quote_rules(text, result)

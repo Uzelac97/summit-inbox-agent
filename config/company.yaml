@@ -76,6 +76,21 @@ warranty:
     never quote a specific number of years. Offer to send the written warranty
     documentation for the customer's own job instead.
 
+# Fixed acknowledgements for a complete quote request (a described job, an
+# address, and a photo). Used verbatim, so the agent cannot ask for more.
+# Placeholders: {name} full name, {first_name}, {company}. en is the fallback.
+quote_acknowledgement:
+  en:
+    greeting: "Hi {first_name},"
+    greeting_anonymous: "Hi there,"
+    body: "Thank you for your request and the photo. We will send your quote within 24 hours."
+    signoff: "Best regards,\nThe {company} Team"
+  de:
+    greeting: "Guten Tag {name},"
+    greeting_anonymous: "Guten Tag,"
+    body: "Vielen Dank für Ihre Anfrage und das Foto. Wir senden Ihnen das Angebot innerhalb von 24 Stunden."
+    signoff: "Mit freundlichen Grüßen,\nIhr {company} Team"
+
 payment:
   note: >-
     Never quote a price, a rate, or a deposit amount. Pricing always follows a

@@ -26,6 +26,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))  # so `src` imports work when run as a script
 
 from src.classifier import active_model, analyze_email, is_cached  # noqa: E402
+from src.quote_rules import is_template_draft  # noqa: E402
 
 CASES_FILE = Path(__file__).resolve().parent / "cases.json"
 
@@ -72,6 +73,7 @@ class Outcome:
     draft: str = ""
     missing_count: int = 0
     expect_no_questions: bool = False
+    expect_template: bool = False
 
     @property
     def ran(self) -> bool:
@@ -99,6 +101,22 @@ class Outcome:
         if not self.expect_no_questions:
             return True
         return "?" not in self.draft and self.missing_count == 0
+
+    @property
+    def template_ok(self) -> bool:
+        """A complete quote gets the fixed acknowledgement, and nothing else.
+
+        The draft must be the template, not the model's text, and must ask
+        nothing. Only cases that declare expect_template are checked.
+        """
+        if not self.expect_template:
+            return True
+        return (
+            self.ran
+            and is_template_draft(self.draft)
+            and "?" not in self.draft
+            and self.missing_count == 0
+        )
 
     @property
     def signature_ok(self) -> bool:
@@ -146,6 +164,7 @@ def score(outcomes: list[Outcome]) -> dict:
                      and not (o.name_ok and o.greeting_ok)],
         "time_bad": [o for o in ran if o.time_promises],
         "questions_bad": [o for o in ran if not o.questions_ok],
+        "template_bad": [o for o in ran if not o.template_ok],
         "signature_bad": [o for o in ran if not o.signature_ok],
     }
 
@@ -280,6 +299,7 @@ def main() -> int:
             outcome.draft = analysis.draft_reply
             outcome.missing_count = len(analysis.missing_info)
             outcome.expect_no_questions = bool(case.get("expect_no_questions"))
+            outcome.expect_template = bool(case.get("expect_template"))
         except Exception as exc:
             outcome.error = f"{type(exc).__name__}: {exc}"
 
@@ -331,12 +351,15 @@ def main() -> int:
                    f"{'has' if '?' in o.draft else 'no'} question mark"),
         ("sign-off matches the draft language", summary["signature_bad"],
          lambda o: (o.draft.strip().splitlines() or [""])[-1][:40]),
+        ("complete quote gets the fixed acknowledgement", summary["template_bad"],
+         lambda o: o.draft.strip().splitlines()[0][:40] if o.draft.strip() else "empty"),
     ):
-        checked = (
-            len([o for o in ran if o.expect_no_questions])
-            if "no questions" in title
-            else len(ran)
-        )
+        if "no questions" in title:
+            checked = len([o for o in ran if o.expect_no_questions])
+        elif "complete quote" in title:
+            checked = len([o for o in ran if o.expect_template])
+        else:
+            checked = len(ran)
         if not bad:
             print(f"  {title:<38} {checked - len(bad)}/{checked} OK")
         else:
