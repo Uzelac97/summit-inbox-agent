@@ -2,8 +2,8 @@
   "description": "Evaluation set for the Summit Roofing inbox agent. Six categories: emergency, quote_request, appointment, complaint, general, spam.",
   "urgency_rubric": {
     "high": "Water entering the building in any amount, including damp patches and stains that are not dripping; structure that is exposed or damaged badly enough that the building is no longer weatherproof; or a safety hazard. Every emergency is high.",
-    "medium": "A concrete action is waiting on us and carries a time element - scheduling, a named deadline, or a complaint about our work - with no water ingress, exposure, or hazard. A worn, aged, or damaged-but-still-weatherproof roof is medium however large the job, including hail or storm damage an insurer has approved while the roof still keeps the weather out.",
-    "low": "Information and budgeting enquiries with no time pressure, and spam.",
+    "medium": "A concrete action is waiting on us and carries a time element - scheduling, a named deadline, or a complaint about our work - with no water ingress, exposure, or hazard. A worn, aged, or damaged-but-still-weatherproof roof is medium however large the job, including hail or storm damage an insurer has approved while the roof still keeps the weather out. Broken, cracked, slipping, or missing tiles reported with no water inside are medium too, even with no deadline: a repair request is a job waiting on us.",
+    "low": "Information and budgeting enquiries with no time pressure, a quote for planned work on a roof not reported as damaged, and spam.",
     "negative_rule": "Time pressure alone is never high. Deadlines, insurance cut-offs, next-day visits, and an anxious or angry tone are medium at most unless the email also reports physical damage or risk.",
     "note": "This rubric is stated in full in SYSTEM_INSTRUCTION in src/classifier.py, so these expectations and the prompt agree."
   },

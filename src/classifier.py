@@ -82,8 +82,14 @@ pressing the paperwork. Hail or storm damage that an insurer has approved for \
 repair is medium while the roof is still weatherproof; it becomes high only \
 once water is getting in or the structure is open.
   - low: information, paperwork, and budgeting enquiries with no time \
-pressure, and all spam. Low is for email where nothing needs scheduling at \
-all.
+pressure, and all spam. Low is for email where nothing needs scheduling at all.
+
+  A request to repair damage the sender describes is medium even with no \
+deadline and no rush, and even when the email is mainly about something \
+routine. "Replacing a few broken tiles" or "re-tiling the cracked, slipping \
+slope" is a repair job waiting on us, so a quote for it is medium whenever no \
+water is inside. Only a quote for planned work on a roof the sender does not \
+report as damaged is low.
 
   A request to book, move, or confirm a visit is medium even when the sender \
 says there is no rush and suggests a date weeks away. We still owe them a \
