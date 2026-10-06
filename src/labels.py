@@ -27,7 +27,11 @@ CATEGORY_LABELS = {
 # rather than silently skipped.
 PROCESSED_LABEL = "agent/processed"
 
-ALL_LABELS = sorted(set(CATEGORY_LABELS.values()) | {PROCESSED_LABEL})
+# Applied only after a complete quote request has been successfully POSTed to
+# the quote generator. Its presence is what stops a second forward.
+FORWARDED_LABEL = "agent/forwarded"
+
+ALL_LABELS = sorted(set(CATEGORY_LABELS.values()) | {PROCESSED_LABEL, FORWARDED_LABEL})
 
 # Gmail's own flags rather than agent labels. An emergency is starred and
 # marked important so it stands out in any view of the inbox, not only one
@@ -51,6 +55,8 @@ LABEL_COLORS = {
     "agent/general": {"backgroundColor": "#4a86e8", "textColor": "#ffffff"},
     "agent/spam": {"backgroundColor": "#999999", "textColor": "#ffffff"},
     PROCESSED_LABEL: {"backgroundColor": "#cccccc", "textColor": "#000000"},
+    # Gmail's palette has no true teal; this mint green is the closest it offers.
+    FORWARDED_LABEL: {"backgroundColor": "#42d692", "textColor": "#000000"},
 }
 
 

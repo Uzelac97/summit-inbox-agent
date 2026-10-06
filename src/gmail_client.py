@@ -19,7 +19,7 @@ from email.message import EmailMessage
 from email.utils import parseaddr
 from html import unescape
 from pathlib import Path
-from typing import Any, Dict, Iterator, List
+from typing import Any, Dict, Iterator, List, Tuple
 
 from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
@@ -308,6 +308,26 @@ class GmailClient:
             .get(userId="me", id=message_id, format="full")
             .execute()
         )
+
+    def get_image_attachments(self, message_id: str) -> List[Tuple[str, str, bytes]]:
+        """Each image attachment as (filename, mime type, bytes), downloaded."""
+        message = self.get_message(message_id)
+        found = []
+        for part in walk_parts(message.get("payload", {})):
+            attachment_id = part.get("body", {}).get("attachmentId")
+            mime = part.get("mimeType") or ""
+            if not (part.get("filename") and attachment_id and mime.startswith("image/")):
+                continue
+            response = (
+                self.service.users()
+                .messages()
+                .attachments()
+                .get(userId="me", messageId=message_id, id=attachment_id)
+                .execute()
+            )
+            data = base64.urlsafe_b64decode(response["data"])
+            found.append((part["filename"], mime, data))
+        return found
 
     # ---- labels ---------------------------------------------------------
 

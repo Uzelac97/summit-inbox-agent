@@ -23,6 +23,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from src.email_source import GmailSource  # noqa: E402
+from src.forward import NOT_QUALIFYING, QuoteForwarder, webhook_url_from_env  # noqa: E402
 from src.gmail_client import GmailClient  # noqa: E402
 from src.labels import SYSTEM_LABELS, UNPROCESSED_QUERY  # noqa: E402
 from src.processor import Processor, Result  # noqa: E402
@@ -46,6 +47,12 @@ def poll_interval_minutes() -> float:
     return value
 
 
+def build_forwarder(client: GmailClient) -> QuoteForwarder | None:
+    """A forwarder when QUOTE_WEBHOOK_URL is set, otherwise None."""
+    url = webhook_url_from_env(os.environ)
+    return QuoteForwarder(client, url) if url else None
+
+
 def actions_taken(result: Result) -> list[str]:
     """Plain-English list of what happened to one email."""
     labels = [name for name in result.labels_applied if name not in SYSTEM_LABELS]
@@ -58,6 +65,9 @@ def actions_taken(result: Result) -> list[str]:
         actions.append("draft saved")
     elif result.draft_skipped:
         actions.append(f"no draft ({result.draft_skipped})")
+    if result.forward and result.forward.status != NOT_QUALIFYING:
+        detail = f" ({result.forward.detail})" if result.forward.detail else ""
+        actions.append(f"quote forward {result.forward.status}{detail}")
     return actions
 
 
@@ -77,7 +87,7 @@ def print_result(index: int, total: int, result: Result) -> None:
     print(f"    actions : {'; '.join(actions_taken(result)) or 'none'}")
 
 
-def run_once(client: GmailClient, max_emails: int) -> tuple[int, int]:
+def run_once(client: GmailClient, max_emails: int, forwarder=None) -> tuple[int, int]:
     """One pass over unprocessed mail. Returns (handled, failed).
 
     A failure to read the mailbox ends this pass but not the loop, so one bad
@@ -96,7 +106,7 @@ def run_once(client: GmailClient, max_emails: int) -> tuple[int, int]:
         print("Nothing new to process.\n")
         return 0, 0
 
-    processor = Processor(client)
+    processor = Processor(client, forwarder=forwarder)
     try:
         processor.prepare()
     except Exception as exc:
@@ -146,14 +156,17 @@ def main() -> int:
         print(f"Could not connect to Gmail: {type(exc).__name__}: {exc}")
         return 1
 
+    forwarder = build_forwarder(client)
+    print("Forward : " + (f"quote requests to {forwarder.url}" if forwarder else "disabled (QUOTE_WEBHOOK_URL empty)"))
+
     if not args.loop:
-        _, failed = run_once(client, args.max_emails)
+        _, failed = run_once(client, args.max_emails, forwarder)
         return 1 if failed else 0
 
     print(f"Looping every {interval:g} minute(s). Ctrl+C to stop.\n")
     try:
         while True:
-            run_once(client, args.max_emails)
+            run_once(client, args.max_emails, forwarder)
             time.sleep(interval * 60)
     except KeyboardInterrupt:
         print("\nStopped.")

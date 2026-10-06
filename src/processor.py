@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 from src.classifier import analyze_email
 from src.gmail_client import build_reply_mime
+from src.forward import Forwarded, QuoteForwarder
 from src.labels import ALL_LABELS, EMERGENCY_MARKS, PROCESSED_LABEL, label_for
 from src.models import Category, EmailAnalysis, InboundEmail
 from src.notify import NoOpNotifier, Notifier
@@ -27,6 +28,7 @@ class Result:
     labels_applied: tuple[str, ...] = ()
     draft_id: str | None = None
     draft_skipped: str = ""
+    forward: Forwarded | None = None
     error: str | None = None
 
     @property
@@ -38,11 +40,16 @@ class Processor:
     """Runs the pipeline over emails, one at a time, never stopping on one."""
 
     def __init__(
-        self, client, dry_run: bool = False, notifier: Notifier | None = None
+        self,
+        client,
+        dry_run: bool = False,
+        notifier: Notifier | None = None,
+        forwarder: QuoteForwarder | None = None,
     ) -> None:
         self.client = client
         self.dry_run = dry_run
         self.notifier = notifier or NoOpNotifier()
+        self.forwarder = forwarder
 
     def prepare(self) -> None:
         """Create the agent's labels up front.
@@ -62,6 +69,14 @@ class Processor:
             self.notifier.emergency(result)
         except Exception:
             log.exception("notify failed: %s", result.email.source_id)
+
+    def _forward(self, email: InboundEmail, analysis: EmailAnalysis) -> Forwarded:
+        """Send a complete quote request on. A failure is recorded, not raised."""
+        try:
+            return self.forwarder.forward(email, analysis)
+        except Exception as exc:
+            log.exception("forward crashed: %s", email.source_id)
+            return Forwarded("failed", f"{type(exc).__name__}: {exc}")
 
     def process(self, email: InboundEmail) -> Result:
         """Analyze one email, label it, and draft a reply.
@@ -123,6 +138,8 @@ class Processor:
 
             if marks:
                 self._notify(result)
+            if self.forwarder:
+                result.forward = self._forward(email, result.analysis)
 
         except Exception as exc:
             # One unprocessable email must not end the run. Without
