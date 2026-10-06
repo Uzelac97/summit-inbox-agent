@@ -11,6 +11,7 @@ draft in place and adds nothing, so the next run will not forward it either
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
 from email.utils import parseaddr
 from typing import Any, Dict
@@ -30,6 +31,41 @@ NOT_QUALIFYING = "not qualifying"
 ALREADY = "skipped"
 FORWARDED = "forwarded"
 FAILED = "failed"
+REFUSED = "refused"
+
+KEY_HEADER = "X-Summit-Key"
+
+# Where a reply stops being the customer's own words: a signature sign-off, a
+# "--" signature delimiter, or the start of quoted history.
+_SIGN_OFF = re.compile(
+    r"^\s*(best regards|kind regards|regards|many thanks|thanks|thank you|cheers|"
+    r"best|sincerely|mit freundlichen gr\S*|viele gr\S*|lg|gr[uü][sß]e?)\s*[,!.]?\s*$",
+    re.IGNORECASE,
+)
+_HISTORY = re.compile(
+    r"^\s*(on .+ wrote:?|am .+ schrieb.*:?|-{2,}\s*original message\s*-{2,}|"
+    r"-{2,}\s*forwarded message\s*-{2,}|from:\s.+|sent from my .*)$",
+    re.IGNORECASE,
+)
+
+
+def own_words(body: str) -> str:
+    """The customer's own words: the body with quoted history and signature cut.
+
+    Reading stops at the first sign-off, signature delimiter, or history
+    header, so everything after it - the signature, the sender's phone number,
+    the earlier messages in the thread - is dropped. Quoted lines ("> ...") are
+    dropped wherever they appear.
+    """
+    kept = []
+    for line in body.splitlines():
+        if line.strip() == "--" or _SIGN_OFF.match(line) or _HISTORY.match(line):
+            break
+        if line.lstrip().startswith(">"):
+            continue
+        kept.append(line.rstrip())
+    text = "\n".join(kept).strip()
+    return re.sub(r"\n{3,}", "\n\n", text)
 
 
 @dataclass
@@ -48,9 +84,10 @@ def webhook_url_from_env(environ: Dict[str, str]) -> str:
 class QuoteForwarder:
     """Sends qualifying quote requests to the webhook, once each."""
 
-    def __init__(self, client, url: str) -> None:
+    def __init__(self, client, url: str, secret: str = "") -> None:
         self.client = client
         self.url = url
+        self.secret = secret
 
     def fields(self, email: InboundEmail, analysis: EmailAnalysis) -> Dict[str, str]:
         """The text fields the generator receives."""
@@ -59,7 +96,7 @@ class QuoteForwarder:
             "name": customer.name or "",
             "email": customer.email or parseaddr(email.sender)[1],
             "address": customer.address or "",
-            "job_description": analysis.summary,
+            "job_description": own_words(email.body),
         }
 
     def already_forwarded(self, email: InboundEmail) -> bool:
@@ -73,6 +110,11 @@ class QuoteForwarder:
         """Forward one email if it qualifies and has not been forwarded before."""
         if not qualifies(email.prompt_text, analysis):
             return Forwarded(NOT_QUALIFYING)
+        if not self.secret:
+            # Without a key the generator cannot tell us from anyone else, so
+            # nothing is sent. Logged here and shown per email in the console.
+            log.error("not forwarding %s: QUOTE_WEBHOOK_SECRET is empty", email.source_id)
+            return Forwarded(REFUSED, "QUOTE_WEBHOOK_SECRET is empty")
         try:
             if self.already_forwarded(email):
                 return Forwarded(ALREADY, "already has agent/forwarded")
@@ -82,6 +124,7 @@ class QuoteForwarder:
                 self.url,
                 data=self.fields(email, analysis),
                 files=files,
+                headers={KEY_HEADER: self.secret},
                 timeout=TIMEOUT_SECONDS,
             )
         except Exception as exc:

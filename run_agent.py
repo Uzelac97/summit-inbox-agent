@@ -50,7 +50,10 @@ def poll_interval_minutes() -> float:
 def build_forwarder(client: GmailClient) -> QuoteForwarder | None:
     """A forwarder when QUOTE_WEBHOOK_URL is set, otherwise None."""
     url = webhook_url_from_env(os.environ)
-    return QuoteForwarder(client, url) if url else None
+    if not url:
+        return None
+    secret = (os.environ.get("QUOTE_WEBHOOK_SECRET") or "").strip()
+    return QuoteForwarder(client, url, secret)
 
 
 def actions_taken(result: Result) -> list[str]:
@@ -157,7 +160,12 @@ def main() -> int:
         return 1
 
     forwarder = build_forwarder(client)
-    print("Forward : " + (f"quote requests to {forwarder.url}" if forwarder else "disabled (QUOTE_WEBHOOK_URL empty)"))
+    if forwarder is None:
+        print("Forward : disabled (QUOTE_WEBHOOK_URL empty)")
+    elif not forwarder.secret:
+        print("Forward : REFUSED - QUOTE_WEBHOOK_URL is set but QUOTE_WEBHOOK_SECRET is empty")
+    else:
+        print(f"Forward : quote requests to {forwarder.url}")
 
     if not args.loop:
         _, failed = run_once(client, args.max_emails, forwarder)
