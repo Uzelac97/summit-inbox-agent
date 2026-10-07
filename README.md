@@ -76,7 +76,9 @@ These cases were used while the urgency rubric was being written, so treat 100% 
 
 ## Screenshots
 
-**Inbox after a run.** Every new email gets a category label, and handled mail is marked `agent/processed`. The senders' names are hidden.
+Mail from a fictional customer, "Tom Harris", used to demo the agent.
+
+**Inbox after a run.** Every new email gets a category label, and handled mail is marked `agent/processed`.
 
 ![Inbox with agent labels](screenshots/01-inbox-labels.png)
 
@@ -84,13 +86,25 @@ These cases were used while the urgency rubric was being written, so treat 100% 
 
 ![Emergency draft](screenshots/02-emergency-draft.png)
 
-**Complete quote request.** The customer has described the job, given an address, and attached a photo. The reply is the fixed acknowledgement, and the email is forwarded to the quote generator (`agent/forwarded`). The names of the sender and the owner are hidden.
+**Complete quote request.** The customer has described the job, given an address, and attached a photo. The reply is the fixed acknowledgement, and the email is forwarded to the quote generator (`agent/forwarded`).
 
 ![Quote request forwarded](screenshots/03-quote-forwarded.png)
 
-**Terminal.** One pass of `run_agent.py`: what was found and what was done for each email. The mailbox address and the Windows user name are hidden.
+**Incomplete quote request.** The customer gave a price question but no photo, so the draft asks for what's missing instead of forwarding a quote request.
 
-![Terminal run](screenshots/04-terminal-run.png)
+![Draft asking for the missing photo](screenshots/04-quote-needs-more.png)
+
+**Reply in German.** The customer wrote in German, so the draft follows in the customer's own language.
+
+![Draft written in German](screenshots/05-german-draft.png)
+
+**Owner-side quote email.** The quote generator's result lands in the same inbox: the AI's reasoning, what's missing, and a draft PDF for the owner to review.
+
+![Quote ready for review, with reasoning and a draft PDF](screenshots/06-owner-quote-email.png)
+
+**Quote PDF.** The draft estimate attached to the email above.
+
+![Draft quote PDF](screenshots/07-quote-pdf.png)
 
 ## Setup
 
