@@ -91,6 +91,34 @@ quote_acknowledgement:
     body: "Vielen Dank für Ihre Anfrage und das Foto. Wir senden Ihnen das Angebot innerhalb von 24 Stunden."
     signoff: "Mit freundlichen Grüßen,\nIhr {company} Team"
 
+# Fixed template for a quote request that is NOT yet complete (job not
+# described, no address, or no photo). Used verbatim, so the agent never
+# promises a quote or claims to have everything it needs while something is
+# still missing. The item list below is picked in code from what is actually
+# missing - never all three, and never from the model.
+# Placeholders: {name} full name, {first_name}, {company}.
+quote_needs_more:
+  en:
+    greeting: "Hi {first_name},"
+    greeting_anonymous: "Hi there,"
+    intro: "Thank you for getting in touch. To prepare your quote we need a photo of the roof, along with a few details about the job."
+    items:
+      photo: "A photo of the roof"
+      address: "The property address"
+      job: "A description of the work needed - for gutters, please include the length in metres"
+    outro: "Please send these and we will get your quote moving."
+    signoff: "Best regards,\nThe {company} Team"
+  de:
+    greeting: "Guten Tag {name},"
+    greeting_anonymous: "Guten Tag,"
+    intro: "Vielen Dank für Ihre Anfrage. Um Ihr Angebot vorzubereiten, benötigen wir ein Foto des Daches sowie ein paar Angaben zum Auftrag."
+    items:
+      photo: "Ein Foto des Daches"
+      address: "Die Adresse des Objekts"
+      job: "Eine Beschreibung der gewünschten Arbeiten - bei Dachrinnen bitte die Länge in Metern angeben"
+    outro: "Bitte senden Sie uns diese Angaben, dann können wir mit Ihrem Angebot fortfahren."
+    signoff: "Mit freundlichen Grüßen,\nIhr {company} Team"
+
 payment:
   note: >-
     Never quote a price, a rate, or a deposit amount. Pricing always follows a

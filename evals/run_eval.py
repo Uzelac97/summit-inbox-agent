@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))  # so `src` imports work when run as a script
 
 from src.classifier import active_model, analyze_email, is_cached  # noqa: E402
-from src.quote_rules import is_template_draft  # noqa: E402
+from src.quote_rules import is_needs_more_draft, is_template_draft  # noqa: E402
 
 CASES_FILE = Path(__file__).resolve().parent / "cases.json"
 
@@ -74,6 +74,7 @@ class Outcome:
     missing_count: int = 0
     expect_no_questions: bool = False
     expect_template: bool = False
+    expect_needs_more: bool = False
 
     @property
     def ran(self) -> bool:
@@ -116,6 +117,21 @@ class Outcome:
             and is_template_draft(self.draft)
             and "?" not in self.draft
             and self.missing_count == 0
+        )
+
+    @property
+    def needs_more_ok(self) -> bool:
+        """An incomplete quote request gets the "needs more" template, and
+        never promises that the quote will be sent or that we have everything.
+
+        Only cases that declare expect_needs_more are checked.
+        """
+        if not self.expect_needs_more:
+            return True
+        return (
+            self.ran
+            and is_needs_more_draft(self.draft)
+            and "24 hours" not in self.draft
         )
 
     @property
@@ -165,6 +181,7 @@ def score(outcomes: list[Outcome]) -> dict:
         "time_bad": [o for o in ran if o.time_promises],
         "questions_bad": [o for o in ran if not o.questions_ok],
         "template_bad": [o for o in ran if not o.template_ok],
+        "needs_more_bad": [o for o in ran if not o.needs_more_ok],
         "signature_bad": [o for o in ran if not o.signature_ok],
     }
 
@@ -300,6 +317,7 @@ def main() -> int:
             outcome.missing_count = len(analysis.missing_info)
             outcome.expect_no_questions = bool(case.get("expect_no_questions"))
             outcome.expect_template = bool(case.get("expect_template"))
+            outcome.expect_needs_more = bool(case.get("expect_needs_more"))
         except Exception as exc:
             outcome.error = f"{type(exc).__name__}: {exc}"
 
@@ -353,11 +371,15 @@ def main() -> int:
          lambda o: (o.draft.strip().splitlines() or [""])[-1][:40]),
         ("complete quote gets the fixed acknowledgement", summary["template_bad"],
          lambda o: o.draft.strip().splitlines()[0][:40] if o.draft.strip() else "empty"),
+        ("incomplete quote gets the needs-more template", summary["needs_more_bad"],
+         lambda o: o.draft.strip().splitlines()[0][:40] if o.draft.strip() else "empty"),
     ):
         if "no questions" in title:
             checked = len([o for o in ran if o.expect_no_questions])
         elif "complete quote" in title:
             checked = len([o for o in ran if o.expect_template])
+        elif "incomplete quote" in title:
+            checked = len([o for o in ran if o.expect_needs_more])
         else:
             checked = len(ran)
         if not bad:

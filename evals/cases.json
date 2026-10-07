@@ -13,7 +13,8 @@
       "tricky": null,
       "expected_category": "quote_request",
       "expected_urgency": "low",
-      "note": "Baseline quote request with no time pressure.",
+      "expect_needs_more": true,
+      "note": "Baseline quote request with no time pressure. The job is described and the address is given, but there is no photo, so this is exactly the case the needs-more template exists for: the draft must ask only for the photo, never claim the quote will be sent.",
       "email": "From: m.delgado44@gmail.com\nSubject: Roof replacement quote\n\nHello,\n\nOur roof is about 22 years old and we are starting to think about replacing\nit. Nothing is wrong with it right now, we just want to budget for it over\nthe next year or two.\n\nCould you send us a quote for a full replacement? The house is a two-storey\ncolonial, roughly 2,200 square feet.\n\nThanks,\nMarco Delgado\n41 Hartley Road\n555 0144\n",
       "expected_customer_name": "Marco Delgado"
     },
@@ -189,6 +190,7 @@
   "draft_rules": {
     "no_time_promises": "No draft may promise a specific date or time. Checked on every case against today, tomorrow, tonight, this morning/afternoon/evening, and the German heute and morgen. 'as soon as possible' and the company's 'within 24 hours' response time are allowed.",
     "no_questions_when_complete": "A case carrying expect_no_questions must produce a draft with no question mark and an empty missing_info list.",
+    "needs_more_when_incomplete": "A case carrying expect_needs_more must produce the fixed needs-more template (never the model's own draft), asking only for what is actually missing, and never a '24 hours' quote promise.",
     "signature": "An English draft signs off 'The Summit Roofing Team', a German draft 'Ihr Summit Roofing Team'."
   }
 }
