@@ -184,6 +184,15 @@
       "expect_template": true,
       "note": "Address, a description of the work, and a photo are all present, so a quote needs nothing further. The draft must be a short acknowledgement confirming the quote within 24 hours, with no questions and an empty missing information list. Asking for roof dimensions or materials here is the failure this case exists to catch. Urgency is medium, not low: cracked and slipping tiles are a damaged but still weatherproof roof, which the rubric puts at medium.",
       "email": "From: Gordon Pike <g.pike.home@gmail.com>\nSubject: Quote for rear slope re-tile\nAttachments: rear_roof.jpg (image/jpeg)\n\nHello,\n\nI would like a quote for re-tiling the rear slope of our roof. It is a\nsemi-detached house, the rear slope is roughly 40 square metres, and the\nexisting concrete tiles are cracked and slipping in several places. No\nleaks inside yet.\n\nThe property is 18 Calder Crescent.\n\nI have attached a photo taken from the garden which shows the slipped\ntiles fairly clearly.\n\nRegards,\nGordon Pike\n555 0288\n"
+    },
+    {
+      "id": "german_greeting_full_name",
+      "tricky": "German sender, no title given",
+      "expected_category": "general",
+      "expected_urgency": "low",
+      "expected_customer_name": "Petra Wolf",
+      "note": "No title (Herr/Frau) appears anywhere in the email, so the greeting must use the full name - 'Guten Tag Petra Wolf,' - and must never open with a bare first name ('Hallo Petra,'), since a German reply uses the formal Sie throughout and a first-name greeting does not belong with it.",
+      "email": "From: petra.wolf@gmx.de\nSubject: Frage zu den Oeffnungszeiten\n\nGuten Tag,\n\nkoennten Sie mir bitte sagen, ob Sie auch samstags erreichbar sind? Ich\nmoechte gerne einen Termin fuer eine Dachinspektion planen, es eilt aber\nnicht.\n\nVielen Dank im Voraus.\n\nMit freundlichen Gruessen\nPetra Wolf\n"
     }
   ],
   "name_rule": "customer.name comes from the signature in the body, falling back to the From display name only when the body carries no signature name. The draft reply's greeting must address the recorded name. Cases carrying expected_customer_name are checked against both.",
@@ -191,6 +200,7 @@
     "no_time_promises": "No draft may promise a specific date or time. Checked on every case against today, tomorrow, tonight, this morning/afternoon/evening, and the German heute and morgen. 'as soon as possible' and the company's 'within 24 hours' response time are allowed.",
     "no_questions_when_complete": "A case carrying expect_no_questions must produce a draft with no question mark and an empty missing_info list.",
     "needs_more_when_incomplete": "A case carrying expect_needs_more must produce the fixed needs-more template (never the model's own draft), asking only for what is actually missing, and never a '24 hours' quote promise.",
-    "signature": "An English draft signs off 'The Summit Roofing Team', a German draft 'Ihr Summit Roofing Team'."
+    "signature": "An English draft signs off 'The Summit Roofing Team', a German draft 'Ihr Summit Roofing Team'.",
+    "german_greeting": "A German greeting ('Guten Tag ...' or 'Hallo ...') must never name a bare first name - it must use the full name, or a title (Herr/Frau) and surname when the email itself gives that title."
   }
 }

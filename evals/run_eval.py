@@ -41,6 +41,22 @@ TIME_PROMISE_RE = re.compile(
 )
 _GUTEN_MORGEN_RE = re.compile(r"guten morgen", re.IGNORECASE)
 
+# A German greeting ("Guten Tag ..." or "Hallo ...") whose name portion is a
+# single word: a bare first name, with no surname and no title. That reads as
+# informal, and a German reply otherwise uses the formal Sie throughout, so
+# the two must never be mixed.
+_GERMAN_BARE_FIRST_NAME_RE = re.compile(r"^(Guten Tag|Hallo)\s+[^\s,]+,?\s*$", re.IGNORECASE)
+
+
+def german_greeting_ok(greeting: str) -> bool:
+    """False only for a German greeting naming a bare first name.
+
+    A full name ("Guten Tag Petra Wolf,") or a title and surname ("Guten Tag
+    Frau Wolf,") both pass; a non-German greeting always passes, since the
+    pattern never matches it.
+    """
+    return not _GERMAN_BARE_FIRST_NAME_RE.match(greeting.strip())
+
 
 def time_promises(draft: str) -> list[str]:
     """Phrases in a draft that promise a specific time."""
@@ -145,6 +161,13 @@ class Outcome:
         return "the summit roofing team" in self.draft.lower()
 
     @property
+    def german_greeting_ok(self) -> bool:
+        """A German greeting never addresses the customer by first name alone."""
+        if not self.ran or not self.draft.strip():
+            return True
+        return german_greeting_ok(self.greeting)
+
+    @property
     def name_ok(self) -> bool:
         return self.ran and self.got_name == self.expected_name
 
@@ -183,6 +206,7 @@ def score(outcomes: list[Outcome]) -> dict:
         "template_bad": [o for o in ran if not o.template_ok],
         "needs_more_bad": [o for o in ran if not o.needs_more_ok],
         "signature_bad": [o for o in ran if not o.signature_ok],
+        "german_greeting_bad": [o for o in ran if not o.german_greeting_ok],
     }
 
 
@@ -369,6 +393,8 @@ def main() -> int:
                    f"{'has' if '?' in o.draft else 'no'} question mark"),
         ("sign-off matches the draft language", summary["signature_bad"],
          lambda o: (o.draft.strip().splitlines() or [""])[-1][:40]),
+        ("German greeting uses full name, not first name alone",
+         summary["german_greeting_bad"], lambda o: o.greeting),
         ("complete quote gets the fixed acknowledgement", summary["template_bad"],
          lambda o: o.draft.strip().splitlines()[0][:40] if o.draft.strip() else "empty"),
         ("incomplete quote gets the needs-more template", summary["needs_more_bad"],

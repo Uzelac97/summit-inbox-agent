@@ -31,7 +31,16 @@ PROCESSED_LABEL = "agent/processed"
 # the quote generator. Its presence is what stops a second forward.
 FORWARDED_LABEL = "agent/forwarded"
 
-ALL_LABELS = sorted(set(CATEGORY_LABELS.values()) | {PROCESSED_LABEL, FORWARDED_LABEL})
+# Applied instead of PROCESSED_LABEL when a qualifying quote request's forward
+# POST fails. Its presence is what a retried pass looks for, and what stops
+# the email being picked up by the normal unprocessed-mail query in the
+# meantime - the draft already exists, so it must not be redrafted.
+FORWARD_FAILED_LABEL = "agent/forward-failed"
+
+ALL_LABELS = sorted(
+    set(CATEGORY_LABELS.values())
+    | {PROCESSED_LABEL, FORWARDED_LABEL, FORWARD_FAILED_LABEL}
+)
 
 # Gmail's own flags rather than agent labels. An emergency is starred and
 # marked important so it stands out in any view of the inbox, not only one
@@ -41,8 +50,16 @@ EMERGENCY_MARKS = ("STARRED", "IMPORTANT")
 SYSTEM_LABELS = frozenset(EMERGENCY_MARKS)
 
 # The mail the agent has not handled yet. Used as the query for a run, so an
-# email already processed is not analysed or drafted for a second time.
-UNPROCESSED_QUERY = f'in:inbox -label:"{PROCESSED_LABEL}"'
+# email already processed is not analysed or drafted for a second time. A
+# forward-failed email is excluded too: it already has its draft, and is
+# retried through RETRY_QUERY instead of being run through the full pipeline
+# again.
+UNPROCESSED_QUERY = (
+    f'in:inbox -label:"{PROCESSED_LABEL}" -label:"{FORWARD_FAILED_LABEL}"'
+)
+
+# Emails whose forward still needs retrying.
+RETRY_QUERY = f'label:"{FORWARD_FAILED_LABEL}"'
 
 # Gmail accepts only a fixed palette for label colours; an arbitrary hex is
 # rejected with a 400. Every value below was checked against the live API.
@@ -57,6 +74,9 @@ LABEL_COLORS = {
     PROCESSED_LABEL: {"backgroundColor": "#cccccc", "textColor": "#000000"},
     # Gmail's palette has no true teal; this mint green is the closest it offers.
     FORWARDED_LABEL: {"backgroundColor": "#42d692", "textColor": "#000000"},
+    # A distinct red from agent/emergency's, so the two are never confused at
+    # a glance - this one means "the webhook failed", not "call the customer".
+    FORWARD_FAILED_LABEL: {"backgroundColor": "#cc3a21", "textColor": "#ffffff"},
 }
 
 

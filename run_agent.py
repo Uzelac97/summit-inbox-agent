@@ -90,6 +90,19 @@ def print_result(index: int, total: int, result: Result) -> None:
     print(f"    actions : {'; '.join(actions_taken(result)) or 'none'}")
 
 
+def print_retry_result(result: Result) -> None:
+    """One line per retried forward: who it was for, and what happened."""
+    email = result.email
+    subject = email.subject or "(no subject)"
+    if result.error:
+        print(f"    {email.sender or '(unknown sender)':<40} {subject:<30} ERROR: {result.error}")
+        return
+    forward = result.forward
+    status = forward.status if forward else "skipped (attempts exhausted)"
+    detail = f" ({forward.detail})" if forward and forward.detail else ""
+    print(f"    {email.sender or '(unknown sender)':<40} {subject:<30} {status}{detail}")
+
+
 def run_once(client: GmailClient, max_emails: int, forwarder=None) -> tuple[int, int]:
     """One pass over unprocessed mail. Returns (handled, failed).
 
@@ -98,6 +111,28 @@ def run_once(client: GmailClient, max_emails: int, forwarder=None) -> tuple[int,
     pass moves on to the next.
     """
     print(f"--- pass at {datetime.now():%Y-%m-%d %H:%M:%S} ---")
+
+    processor = Processor(client, forwarder=forwarder)
+    try:
+        processor.prepare()
+    except Exception as exc:
+        print(f"Could not prepare labels: {type(exc).__name__}: {exc}\n")
+        return 0, 1
+
+    # Retrying previously failed forwards happens before any new mail is
+    # fetched, so a webhook that is back up gets a chance before this pass
+    # takes on more work.
+    try:
+        retried = processor.retry_forward_failures()
+    except Exception as exc:
+        print(f"Could not retry failed forwards: {type(exc).__name__}: {exc}\n")
+        retried = []
+    if retried:
+        print(f"Retrying {len(retried)} previously failed forward(s):")
+        for result in retried:
+            print_retry_result(result)
+        print()
+
     try:
         source = GmailSource(client=client, query=UNPROCESSED_QUERY)
         emails = source.fetch(limit=max_emails)
@@ -108,13 +143,6 @@ def run_once(client: GmailClient, max_emails: int, forwarder=None) -> tuple[int,
     if not emails:
         print("Nothing new to process.\n")
         return 0, 0
-
-    processor = Processor(client, forwarder=forwarder)
-    try:
-        processor.prepare()
-    except Exception as exc:
-        print(f"Could not prepare labels: {type(exc).__name__}: {exc}\n")
-        return 0, 1
 
     failed = 0
     for index, email in enumerate(emails, start=1):

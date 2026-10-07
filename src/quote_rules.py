@@ -28,10 +28,11 @@ TEMPLATE_MARKERS = (
     "Vielen Dank für Ihre Anfrage und das Foto.",
 )
 
-# Text that only the needs-more template contains.
+# Text that only the needs-more template contains. Kept in step with
+# config/company.yaml's quote_needs_more.
 NEEDS_MORE_MARKERS = (
-    "To prepare your quote we need a photo of the roof",
-    "Um Ihr Angebot vorzubereiten, benötigen wir ein Foto des Daches",
+    "To prepare your quote we need:",
+    "Um Ihr Angebot vorzubereiten, benötigen wir noch:",
 )
 
 # What a quote needs, in the order they are listed when missing. Keys match

@@ -4,16 +4,19 @@ A quote request that qualifies for the acknowledgement template - a described
 job, an address, and a photo - is POSTed to QUOTE_WEBHOOK_URL as
 multipart/form-data. The label agent/forwarded is added only after the POST
 succeeds, and its presence stops a second forward. A failed POST leaves the
-draft in place and adds nothing, so the next run will not forward it either
-(the email is already agent/processed); it is reported in the console.
+draft in place; :class:`~src.processor.Processor` withholds agent/processed in
+that case and applies agent/forward-failed instead, so a later pass retries
+just the forward (see Processor.retry_forward_failures) rather than losing it.
 """
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from dataclasses import dataclass
 from email.utils import parseaddr
+from pathlib import Path
 from typing import Any, Dict
 
 import requests
@@ -33,7 +36,52 @@ FORWARDED = "forwarded"
 FAILED = "failed"
 REFUSED = "refused"
 
+# A forward in either of these states did not reach the generator and should
+# be retried, up to MAX_FORWARD_ATTEMPTS times, rather than treated as done.
+RETRYABLE_STATUSES = (FAILED, REFUSED)
+
 KEY_HEADER = "X-Summit-Key"
+
+# How many times a single message's forward is retried before it is left
+# alone with agent/forward-failed for a person to look at.
+MAX_FORWARD_ATTEMPTS = 5
+
+# Failure counts per message, kept locally rather than in Gmail: a label can
+# say "this failed" but not "how many times", and the count must survive
+# between passes of run_agent.py.
+ATTEMPTS_FILE = Path(__file__).resolve().parent.parent / "data" / "forward_attempts.json"
+
+
+def _load_attempts() -> Dict[str, int]:
+    try:
+        return json.loads(ATTEMPTS_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def _save_attempts(data: Dict[str, int]) -> None:
+    ATTEMPTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    ATTEMPTS_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+
+def forward_attempts(message_id: str) -> int:
+    """How many times forwarding this message has already failed."""
+    return _load_attempts().get(message_id, 0)
+
+
+def record_forward_attempt(message_id: str) -> int:
+    """Record one more failed attempt for a message, returning the new total."""
+    data = _load_attempts()
+    data[message_id] = data.get(message_id, 0) + 1
+    _save_attempts(data)
+    return data[message_id]
+
+
+def clear_forward_attempts(message_id: str) -> None:
+    """Drop a message's failure count once it no longer needs retrying."""
+    data = _load_attempts()
+    if data.pop(message_id, None) is not None:
+        _save_attempts(data)
 
 # Where a reply stops being the customer's own words: a signature sign-off, a
 # "--" signature delimiter, or the start of quoted history.

@@ -179,9 +179,17 @@ Best regards,
 The {COMPANY_NAME} Team
 
 Use the greeting and sign-off conventions of the language you are writing in, \
-not a word-for-word translation of the English ones - a German reply opens \
-"Guten Tag Herr/Frau <surname>," or "Hallo <first name>," and closes "Mit \
-freundlichen Grüßen".
+not a word-for-word translation of the English ones. A German reply opens \
+"Guten Tag" followed by the customer's full name, for example "Guten Tag \
+Petra Wolf," - use "Guten Tag Herr <surname>," or "Guten Tag Frau <surname>," \
+instead only when the customer's own email literally contains that title \
+("Herr" or "Frau") for themselves. Never guess a title from the customer's \
+name or its apparent gender: a name alone is not an explicit title, so \
+"Petra Wolf" with no title anywhere in the email gets "Guten Tag Petra \
+Wolf," not "Guten Tag Frau Wolf,". Never address a German customer by first \
+name alone either, as in "Hallo Petra,": a German reply uses the formal Sie \
+throughout, and a first-name greeting does not belong with it. It closes \
+"Mit freundlichen Grüßen".
 
 The final line names the team in the language of the reply, built from the \
 company name: in English "The {COMPANY_NAME} Team", in German "Ihr \
